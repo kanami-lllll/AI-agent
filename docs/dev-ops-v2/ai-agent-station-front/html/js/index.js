@@ -1,4 +1,4 @@
-const chatArea = document.getElementById('chatArea');
+﻿const chatArea = document.getElementById('chatArea');
 const messageInput = document.getElementById('messageInput');
 const submitBtn = document.getElementById('submitBtn');
 const newChatBtn = document.getElementById('newChatBtn');
@@ -10,7 +10,7 @@ const clearAllChatsBtn = document.getElementById('clearAllChatsBtn');
 let currentEventSource = null;
 let currentChatId = null;
 
-// 本地存储工具函数
+// 鏈湴瀛樺偍宸ュ叿鍑芥暟
 async function setStorageItem(key, value) {
     try {
         localStorage.setItem(key, value);
@@ -30,10 +30,8 @@ async function getStorageItem(key) {
     }
 }
 
-// 获取知识库列表
-document.addEventListener('DOMContentLoaded', function() {
-    // 获取知识库列表
-    const loadRagOptions = () => {
+// 鑾峰彇鐭ヨ瘑搴撳垪琛?document.addEventListener('DOMContentLoaded', function() {
+    // 鑾峰彇鐭ヨ瘑搴撳垪琛?    const loadRagOptions = () => {
         const ragSelect = document.getElementById('ragSelect');
 
         fetch(ApiConfig.getApiUrl('/ai/admin/rag/queryAllValidRagOrder'), {
@@ -45,26 +43,25 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data) {
-                    // 清空现有选项（保留第一个默认选项）
-                    while (ragSelect.options.length > 1) {
+                    // 娓呯┖鐜版湁閫夐」锛堜繚鐣欑涓€涓粯璁ら€夐」锛?                    while (ragSelect.options.length > 1) {
                         ragSelect.remove(1);
                     }
 
-                    // 添加新选项
+                    // 娣诲姞鏂伴€夐」
                     data.forEach(item => {
-                        const option = new Option(`Rag：${item.ragName}`, item.id);
+                        const option = new Option(`Rag锛?{item.ragName}`, item.id);
                         ragSelect.add(option);
                     });
                 }
             })
             .catch(error => {
-                console.error('获取知识库列表失败:', error);
+                console.error('鑾峰彇鐭ヨ瘑搴撳垪琛ㄥけ璐?', error);
             });
     };
 
-    // 获取AI代理列表
+    // 鑾峰彇AI浠ｇ悊鍒楄〃
     function fetchAiAgents() {
-        // 发送请求获取AI代理列表
+        // 鍙戦€佽姹傝幏鍙朅I浠ｇ悊鍒楄〃
         fetch(ApiConfig.getApiUrl('/ai/admin/agent/queryAllAgentConfigListByChannel'), {
             method: 'POST',
             headers: {
@@ -74,23 +71,22 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('网络响应不正常');
+                throw new Error('缃戠粶鍝嶅簲涓嶆甯?);
             }
             return response.json();
         })
         .then(data => {
             const aiAgentSelect = document.getElementById('aiAgent');
-            // 清空现有选项
+            // 娓呯┖鐜版湁閫夐」
             aiAgentSelect.innerHTML = '';
 
-            // 添加从服务器获取的选项
+            // 娣诲姞浠庢湇鍔″櫒鑾峰彇鐨勯€夐」
             if (data && data.length > 0) {
                 data.forEach((agent, index) => {
                     const option = document.createElement('option');
                     option.value = agent.id;
                     option.textContent = agent.agentName;
-                    // 如果是第一个选项，设置为选中状态
-                    if (index === 0) {
+                    // 濡傛灉鏄涓€涓€夐」锛岃缃负閫変腑鐘舵€?                    if (index === 0) {
                         option.selected = true;
                     }
                     aiAgentSelect.appendChild(option);
@@ -98,12 +94,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            console.error('获取AI代理列表失败:', error);
+            console.error('鑾峰彇AI浠ｇ悊鍒楄〃澶辫触:', error);
         });
     }
 
-    // 获取提示词列表
-    function fetchPromptTemplates() {
+    // 鑾峰彇鎻愮ず璇嶅垪琛?    function fetchPromptTemplates() {
         fetch(ApiConfig.getApiUrl('/ai/admin/client/system/prompt/queryAllSystemPromptConfig'), {
             method: 'POST',
             headers: {
@@ -112,18 +107,17 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('网络响应不正常');
+                throw new Error('缃戠粶鍝嶅簲涓嶆甯?);
             }
             return response.json();
         })
         .then(data => {
             const promptSelect = document.getElementById('promptSelect');
-            // 清空现有选项（保留第一个默认选项）
-            while (promptSelect.options.length > 1) {
+            // 娓呯┖鐜版湁閫夐」锛堜繚鐣欑涓€涓粯璁ら€夐」锛?            while (promptSelect.options.length > 1) {
                 promptSelect.remove(1);
             }
 
-            // 添加从服务器获取的选项
+            // 娣诲姞浠庢湇鍔″櫒鑾峰彇鐨勯€夐」
             if (data && data.length > 0) {
                 data.forEach(prompt => {
                     const option = document.createElement('option');
@@ -134,32 +128,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            console.error('获取提示词列表失败:', error);
+            console.error('鑾峰彇鎻愮ず璇嶅垪琛ㄥけ璐?', error);
         });
     }
 
-    // 初始化加载
-    loadRagOptions();
-    // 获取AI代理列表
+    // 鍒濆鍖栧姞杞?    loadRagOptions();
+    // 鑾峰彇AI浠ｇ悊鍒楄〃
     fetchAiAgents();
-    // 获取提示词列表
-    fetchPromptTemplates();
+    // 鑾峰彇鎻愮ず璇嶅垪琛?    fetchPromptTemplates();
 
-    // 添加提示词选择事件监听
+    // 娣诲姞鎻愮ず璇嶉€夋嫨浜嬩欢鐩戝惉
     const promptSelect = document.getElementById('promptSelect');
     promptSelect.addEventListener('change', function() {
         const selectedPrompt = this.value;
         if (selectedPrompt) {
             const messageInput = document.getElementById('messageInput');
-            // 如果输入框已有内容，则在内容前添加提示词
+            // 濡傛灉杈撳叆妗嗗凡鏈夊唴瀹癸紝鍒欏湪鍐呭鍓嶆坊鍔犳彁绀鸿瘝
             if (messageInput.value.trim()) {
                 messageInput.value = selectedPrompt + '\n\n' + messageInput.value;
             } else {
                 messageInput.value = selectedPrompt;
             }
-            // 重置选择框
-            this.value = '';
-            // 聚焦到输入框
+            // 閲嶇疆閫夋嫨妗?            this.value = '';
+            // 鑱氱劍鍒拌緭鍏ユ
             messageInput.focus();
         }
     });
@@ -170,7 +161,7 @@ async function createNewChat() {
     currentChatId = chatId;
     await setStorageItem('currentChatId', chatId);
     await setStorageItem(`chat_${chatId}`, JSON.stringify({
-        name: `新聊天 ${new Date().toLocaleTimeString('zh-CN', { hour12: false })}`,
+        name: `鏂拌亰澶?${new Date().toLocaleTimeString('zh-CN', { hour12: false })}`,
         messages: []
     }));
     await updateChatList();
@@ -179,7 +170,7 @@ async function createNewChat() {
 }
 
 function deleteChat(chatId) {
-    if (confirm('确定要删除这个聊天记录吗？')) {
+    if (confirm('纭畾瑕佸垹闄よ繖涓亰澶╄褰曞悧锛?)) {
         localStorage.removeItem(`chat_${chatId}`); // Remove the chat from localStorage
         if (currentChatId === chatId) { // If the current chat is being deleted
             createNewChat(); // Create a new chat
@@ -204,10 +195,9 @@ function updateChatList() {
         let chatData = JSON.parse(localStorage.getItem(chatKey));
         const chatId = chatKey.split('_')[1];
 
-        // 数据迁移：将旧数组格式转换为新对象格式
-        if (Array.isArray(chatData)) {
+        // 鏁版嵁杩佺Щ锛氬皢鏃ф暟缁勬牸寮忚浆鎹负鏂板璞℃牸寮?        if (Array.isArray(chatData)) {
             chatData = {
-                name: `聊天 ${new Date(parseInt(chatId)).toLocaleDateString()}`,
+                name: `鑱婂ぉ ${new Date(parseInt(chatId)).toLocaleDateString()}`,
                 messages: chatData
             };
             localStorage.setItem(chatKey, JSON.stringify(chatData));
@@ -221,8 +211,8 @@ function updateChatList() {
                 <div class="text-xs text-gray-400">${new Date(parseInt(chatId)).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })}</div>
             </div>
             <div class="chat-actions flex items-center gap-1 opacity-0 transition-opacity duration-200">
-                <button class="p-1 hover:bg-gray-200 rounded text-gray-500" onclick="renameChat('${chatId}')">重命名</button>
-                <button class="p-1 hover:bg-red-200 rounded text-red-500" onclick="deleteChat('${chatId}')">删除</button>
+                <button class="p-1 hover:bg-gray-200 rounded text-gray-500" onclick="renameChat('${chatId}')">閲嶅懡鍚?/button>
+                <button class="p-1 hover:bg-red-200 rounded text-red-500" onclick="deleteChat('${chatId}')">鍒犻櫎</button>
             </div>
         `;
         li.addEventListener('click', (e) => {
@@ -241,8 +231,7 @@ function updateChatList() {
 }
 
 let currentContextMenu = null;
-// 优化后的上下文菜单
-function showChatContextMenu(event, chatId) {
+// 浼樺寲鍚庣殑涓婁笅鏂囪彍鍗?function showChatContextMenu(event, chatId) {
     event.stopPropagation();
     closeContextMenu();
 
@@ -258,20 +247,19 @@ function showChatContextMenu(event, chatId) {
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
-            重命名
-        </div>
+            閲嶅懡鍚?        </div>
         <div class="context-menu-item text-red-500" onclick="deleteChat('${chatId}')">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
-            删除
+            鍒犻櫎
         </div>
     `;
 
     document.body.appendChild(menu);
     currentContextMenu = menu;
 
-    // 点击外部关闭菜单
+    // 鐐瑰嚮澶栭儴鍏抽棴鑿滃崟
     setTimeout(() => {
         document.addEventListener('click', closeContextMenu, { once: true });
     });
@@ -287,8 +275,8 @@ function closeContextMenu() {
 function renameChat(chatId) {
     const chatKey = `chat_${chatId}`;
     const chatData = JSON.parse(localStorage.getItem(chatKey));
-    const currentName = chatData.name || `聊天 ${new Date(parseInt(chatId)).toLocaleString()}`;
-    let newName = prompt('请输入新的聊天名称', currentName);
+    const currentName = chatData.name || `鑱婂ぉ ${new Date(parseInt(chatId)).toLocaleString()}`;
+    let newName = prompt('璇疯緭鍏ユ柊鐨勮亰澶╁悕绉?, currentName);
     if (newName && newName.length > 10) {
         newName = newName.substring(0, 10);
     }
@@ -316,6 +304,26 @@ function clearChatArea() {
     welcomeMessage.style.display = 'flex';
 }
 
+function buildConversationPrompt(rawMessage) {
+    if (!currentChatId) {
+        return rawMessage;
+    }
+
+    const chatData = JSON.parse(localStorage.getItem(`chat_${currentChatId}`) || '{"messages": []}');
+    const messages = Array.isArray(chatData.messages) ? chatData.messages : [];
+    const historyMessages = messages.slice(Math.max(0, messages.length - 9), Math.max(0, messages.length - 1));
+
+    if (historyMessages.length === 0) {
+        return rawMessage;
+    }
+
+    const historyText = historyMessages
+        .map(item => `${item.isAssistant ? '鍔╂墜' : '鐢ㄦ埛'}: ${item.content}`)
+        .join('\n');
+
+    return `浣犳鍦ㄥ拰鍚屼竴涓敤鎴疯繛缁璇濓紝璇风粨鍚堟渶杩戜笂涓嬫枃缁х画鍥炵瓟锛屼笉瑕佽浣犳棤娉曡浣忓巻鍙插唴瀹广€俓n\n鏈€杩戝璇濓細\n${historyText}\n\n褰撳墠鐢ㄦ埛闂锛歕n${rawMessage}`;
+}
+
 function appendMessage(content, isAssistant = false, saveToStorage = true) {
     welcomeMessage.style.display = 'none';
     const messageDiv = document.createElement('div');
@@ -324,14 +332,14 @@ function appendMessage(content, isAssistant = false, saveToStorage = true) {
     const renderedContent = DOMPurify.sanitize(marked.parse(content));
     messageDiv.innerHTML = renderedContent;
 
-    // 添加复制按钮
+    // 娣诲姞澶嶅埗鎸夐挳
     const copyBtn = document.createElement('button');
     copyBtn.className = 'absolute top-2 right-2 p-1 bg-gray-200 rounded-md text-xs';
-    copyBtn.textContent = '复制';
+    copyBtn.textContent = '澶嶅埗';
     copyBtn.onclick = () => {
         navigator.clipboard.writeText(content).then(() => {
-            copyBtn.textContent = '已复制';
-            setTimeout(() => copyBtn.textContent = '复制', 2000);
+            copyBtn.textContent = '宸插鍒?;
+            setTimeout(() => copyBtn.textContent = '澶嶅埗', 2000);
         });
     };
     messageDiv.appendChild(copyBtn);
@@ -339,20 +347,19 @@ function appendMessage(content, isAssistant = false, saveToStorage = true) {
     chatArea.appendChild(messageDiv);
     chatArea.scrollTop = chatArea.scrollHeight;
 
-    // 仅在需要时保存到本地存储
-    if (saveToStorage && currentChatId) {
-        // 确保读取和保存完整的数据结构
-        const chatData = JSON.parse(localStorage.getItem(`chat_${currentChatId}`) || '{"name": "新聊天", "messages": []}');
+    // 浠呭湪闇€瑕佹椂淇濆瓨鍒版湰鍦板瓨鍌?    if (saveToStorage && currentChatId) {
+        // 纭繚璇诲彇鍜屼繚瀛樺畬鏁寸殑鏁版嵁缁撴瀯
+        const chatData = JSON.parse(localStorage.getItem(`chat_${currentChatId}`) || '{"name": "鏂拌亰澶?, "messages": []}');
         chatData.messages.push({ content, isAssistant });
 
-        // 如果是用户的第一条消息，将其作为聊天名称
+        // 濡傛灉鏄敤鎴风殑绗竴鏉℃秷鎭紝灏嗗叾浣滀负鑱婂ぉ鍚嶇О
         if (!isAssistant && chatData.messages.length === 1) {
             const nameContent = content.length > 20 ? content.substring(0, 20) + '...' : content;
             chatData.name = nameContent;
         }
 
         localStorage.setItem(`chat_${currentChatId}`, JSON.stringify(chatData));
-        updateChatList(); // 更新聊天列表以显示新名称
+        updateChatList(); // 鏇存柊鑱婂ぉ鍒楄〃浠ユ樉绀烘柊鍚嶇О
     }
 }
 
@@ -361,23 +368,85 @@ function startEventStream(message) {
         currentEventSource.close();
     }
 
-    // 显示加载指示器
     const loadingSpinner = document.getElementById('loadingSpinner');
     loadingSpinner.classList.remove('hidden');
     submitBtn.disabled = true;
 
     const ragId = document.getElementById('ragSelect').value;
-    // 判断 ragId 为空的时候，设置为0
     const ragIdParam = ragId ? ragId : '0';
     const aiAgentSelect = document.getElementById('aiAgent');
     const aiAgentId = aiAgentSelect.value;
-    const aiModelModel = aiAgentSelect.options[aiAgentSelect.selectedIndex].getAttribute('model');
-
-    let url = `${ApiConfig.BASE_URL}${ApiConfig.API_PREFIX}/ai/agent/chat_stream?aiAgentId=${aiAgentId}&ragId=${ragIdParam}&message=${encodeURIComponent(message)}`;
+    const promptMessage = buildConversationPrompt(message);
+    const url = `${ApiConfig.BASE_URL}${ApiConfig.API_PREFIX}/ai/agent/chat_stream?aiAgentId=${aiAgentId}&ragId=${ragIdParam}&message=${encodeURIComponent(promptMessage)}`;
 
     currentEventSource = new EventSource(url);
-    let accumulatedContent = '';
+    let renderedContent = '';
+    let pendingContent = '';
     let tempMessageDiv = null;
+    let renderTimer = null;
+    let streamFinished = false;
+
+    function ensureAssistantBox() {
+        if (!tempMessageDiv) {
+            tempMessageDiv = document.createElement('div');
+            tempMessageDiv.className = 'max-w-4xl mx-auto mb-4 p-4 rounded-lg bg-gray-100 markdown-body relative';
+            chatArea.appendChild(tempMessageDiv);
+            welcomeMessage.style.display = 'none';
+        }
+    }
+
+    function finalizeAssistantMessage(finalContent) {
+        if (!tempMessageDiv) {
+            return;
+        }
+
+        tempMessageDiv.innerHTML = DOMPurify.sanitize(marked.parse(finalContent));
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'absolute top-2 right-2 p-1 bg-gray-200 rounded-md text-xs';
+        copyBtn.textContent = 'Copy';
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(finalContent).then(() => {
+                copyBtn.textContent = 'Copied';
+                setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+            });
+        };
+        tempMessageDiv.appendChild(copyBtn);
+
+        if (currentChatId) {
+            const chatData = JSON.parse(localStorage.getItem(`chat_${currentChatId}`) || '{"name":"New Chat","messages":[]}');
+            chatData.messages.push({ content: finalContent, isAssistant: true });
+            localStorage.setItem(`chat_${currentChatId}`, JSON.stringify(chatData));
+        }
+
+        loadingSpinner.classList.add('hidden');
+        submitBtn.disabled = false;
+    }
+
+    function scheduleRender() {
+        if (renderTimer) {
+            return;
+        }
+
+        renderTimer = setInterval(() => {
+            if (pendingContent.length > 0) {
+                ensureAssistantBox();
+                const step = pendingContent.slice(0, 2);
+                pendingContent = pendingContent.slice(2);
+                renderedContent += step;
+                tempMessageDiv.textContent = renderedContent;
+                chatArea.scrollTop = chatArea.scrollHeight;
+                return;
+            }
+
+            clearInterval(renderTimer);
+            renderTimer = null;
+
+            if (streamFinished) {
+                finalizeAssistantMessage(renderedContent);
+            }
+        }, 20);
+    }
 
     currentEventSource.onmessage = function(event) {
         try {
@@ -386,55 +455,24 @@ function startEventStream(message) {
             if (data.result) {
                 const output = data.result.output;
                 if (output.text) {
-                    const newContent = output.text;
-                    accumulatedContent += newContent;
-
-                    if (!tempMessageDiv) {
-                        tempMessageDiv = document.createElement('div');
-                        tempMessageDiv.className = 'max-w-4xl mx-auto mb-4 p-4 rounded-lg bg-gray-100 markdown-body relative';
-                        chatArea.appendChild(tempMessageDiv);
-                        welcomeMessage.style.display = 'none';
-                    }
-
-                    tempMessageDiv.textContent = accumulatedContent;
-                    chatArea.scrollTop = chatArea.scrollHeight;
+                    pendingContent += output.text;
+                    scheduleRender();
                 }
 
                 if (output.metadata.finishReason === 'STOP') {
                     currentEventSource.close();
-                    const finalContent = accumulatedContent;
-                    tempMessageDiv.innerHTML = DOMPurify.sanitize(marked.parse(finalContent));
-
-                    const copyBtn = document.createElement('button');
-                    copyBtn.className = 'absolute top-2 right-2 p-1 bg-gray-200 rounded-md text-xs';
-                    copyBtn.textContent = '复制';
-                    copyBtn.onclick = () => {
-                        navigator.clipboard.writeText(finalContent).then(() => {
-                            copyBtn.textContent = '已复制';
-                            setTimeout(() => copyBtn.textContent = '复制', 2000);
-                        });
-                    };
-                    tempMessageDiv.appendChild(copyBtn);
-
-                    if (currentChatId) {
-                        const chatData = JSON.parse(localStorage.getItem(`chat_${currentChatId}`) || '{"name": "新聊天", "messages": []}');
-                        chatData.messages.push({ content: finalContent, isAssistant: true });
-                        localStorage.setItem(`chat_${currentChatId}`, JSON.stringify(chatData));
+                    streamFinished = true;
+                    if (!renderTimer && pendingContent.length === 0) {
+                        finalizeAssistantMessage(renderedContent);
                     }
-                    
-                    // 隐藏加载指示器
-                    loadingSpinner.classList.add('hidden');
-                    submitBtn.disabled = false;
                 }
             } else {
                 currentEventSource.close();
-                // 隐藏加载指示器
                 loadingSpinner.classList.add('hidden');
                 submitBtn.disabled = false;
             }
         } catch (e) {
             console.error('Error parsing event data:', e);
-            // 发生错误时也隐藏加载指示器
             loadingSpinner.classList.add('hidden');
             submitBtn.disabled = false;
         }
@@ -443,12 +481,14 @@ function startEventStream(message) {
     currentEventSource.onerror = function(error) {
         console.error('EventSource error:', error);
         currentEventSource.close();
-        // 发生错误时隐藏加载指示器
+        if (renderTimer) {
+            clearInterval(renderTimer);
+            renderTimer = null;
+        }
         loadingSpinner.classList.add('hidden');
         submitBtn.disabled = false;
     };
 }
-
 submitBtn.addEventListener('click', () => {
     const message = messageInput.value.trim();
     if (!message) return;
@@ -508,37 +548,33 @@ if (window.innerWidth <= 768) {
 
 updateSidebarIcon();
 
-// 清空所有聊天记录
-function clearAllChats() {
-    if (confirm('确定要清空所有聊天记录吗？此操作不可恢复！')) {
-        // 获取所有聊天记录的key
+// 娓呯┖鎵€鏈夎亰澶╄褰?function clearAllChats() {
+    if (confirm('纭畾瑕佹竻绌烘墍鏈夎亰澶╄褰曞悧锛熸鎿嶄綔涓嶅彲鎭㈠锛?)) {
+        // 鑾峰彇鎵€鏈夎亰澶╄褰曠殑key
         const keys = Object.keys(localStorage).filter(key => key.startsWith('chat_'));
         
-        // 删除所有聊天记录
-        keys.forEach(key => localStorage.removeItem(key));
+        // 鍒犻櫎鎵€鏈夎亰澶╄褰?        keys.forEach(key => localStorage.removeItem(key));
         
-        // 清除当前聊天ID
+        // 娓呴櫎褰撳墠鑱婂ぉID
         localStorage.removeItem('currentChatId');
         currentChatId = null;
         
-        // 清空UI
+        // 娓呯┖UI
         clearChatArea();
         updateChatList();
         
-        // 创建新的空聊天
-        createNewChat();
+        // 鍒涘缓鏂扮殑绌鸿亰澶?        createNewChat();
     }
 }
 
-// 绑定清空按钮事件
+// 缁戝畾娓呯┖鎸夐挳浜嬩欢
 clearAllChatsBtn.addEventListener('click', clearAllChats);
 
-// 上传知识下拉菜单控制
-// 获取上传知识按钮和菜单元素
-const uploadMenuButton = document.getElementById('uploadMenuButton');
+// 涓婁紶鐭ヨ瘑涓嬫媺鑿滃崟鎺у埗
+// 鑾峰彇涓婁紶鐭ヨ瘑鎸夐挳鍜岃彍鍗曞厓绱?const uploadMenuButton = document.getElementById('uploadMenuButton');
 const uploadMenu = document.getElementById('uploadMenu');
 
-// 切换菜单显示
+// 鍒囨崲鑿滃崟鏄剧ず
 uploadMenuButton.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -549,16 +585,17 @@ uploadMenuButton.addEventListener('click', (e) => {
     }
 });
 
-// 点击外部区域关闭菜单
+// 鐐瑰嚮澶栭儴鍖哄煙鍏抽棴鑿滃崟
 document.addEventListener('click', (e) => {
     if (!uploadMenu.contains(e.target) && e.target !== uploadMenuButton && !uploadMenuButton.contains(e.target)) {
         uploadMenu.style.display = 'none';
     }
 });
 
-// 菜单项点击后关闭菜单
+// 鑿滃崟椤圭偣鍑诲悗鍏抽棴鑿滃崟
 document.querySelectorAll('#uploadMenu a').forEach(item => {
     item.addEventListener('click', () => {
         uploadMenu.style.display = 'none';
     });
 });
+

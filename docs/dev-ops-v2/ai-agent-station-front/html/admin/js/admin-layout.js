@@ -113,6 +113,14 @@
         return path.substring(path.lastIndexOf('/') + 1) || 'index.html';
     }
 
+    function isAdminPageDetail() {
+        return window.location.pathname.includes('/admin/page/');
+    }
+
+    function buildPageHref(file) {
+        return isAdminPageDetail() ? file : `page/${file}`;
+    }
+
     function renderSidebar() {
         const sidebarBody = document.querySelector('nav.sidebar .position-sticky, #sidebarMenu .position-sticky');
         if (!sidebarBody) {
@@ -125,7 +133,7 @@
                 const active = file === page ? 'active' : '';
                 return `
                     <li class="nav-item">
-                        <a class="nav-link ${active}" href="${file}">
+                        <a class="nav-link ${active}" href="${buildPageHref(file)}">
                             <i class="fas ${icon}"></i> ${label}
                         </a>
                     </li>
@@ -151,7 +159,7 @@
         const brand = document.querySelector('.navbar-brand');
         if (brand) {
             brand.textContent = 'AI Agent Console';
-            const href = window.location.pathname.includes('/admin/page/') ? '../index.html' : 'index.html';
+            const href = isAdminPageDetail() ? '../index.html' : 'index.html';
             brand.setAttribute('href', href);
         }
 
