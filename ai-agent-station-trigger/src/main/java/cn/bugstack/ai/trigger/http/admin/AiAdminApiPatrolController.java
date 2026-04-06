@@ -8,6 +8,7 @@ import cn.bugstack.ai.trigger.service.ApiPatrolService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -54,6 +55,12 @@ public class AiAdminApiPatrolController {
     @RequestMapping(value = "addApiPatrolConfig", method = RequestMethod.POST)
     public ResponseEntity<Boolean> addApiPatrolConfig(@RequestBody ApiPatrolConfig apiPatrolConfig) {
         try {
+            if (null == apiPatrolConfig.getTaskStatus()) {
+                apiPatrolConfig.setTaskStatus(0);
+            }
+            if (1 == apiPatrolConfig.getTaskStatus() && !CronExpression.isValidExpression(apiPatrolConfig.getCronExpression())) {
+                return ResponseEntity.badRequest().body(false);
+            }
             apiPatrolConfig.setCreateTime(new Date());
             apiPatrolConfig.setUpdateTime(new Date());
             int count = apiPatrolConfigDao.insert(apiPatrolConfig);
@@ -67,6 +74,12 @@ public class AiAdminApiPatrolController {
     @RequestMapping(value = "updateApiPatrolConfig", method = RequestMethod.POST)
     public ResponseEntity<Boolean> updateApiPatrolConfig(@RequestBody ApiPatrolConfig apiPatrolConfig) {
         try {
+            if (null == apiPatrolConfig.getTaskStatus()) {
+                apiPatrolConfig.setTaskStatus(0);
+            }
+            if (1 == apiPatrolConfig.getTaskStatus() && !CronExpression.isValidExpression(apiPatrolConfig.getCronExpression())) {
+                return ResponseEntity.badRequest().body(false);
+            }
             apiPatrolConfig.setUpdateTime(new Date());
             int count = apiPatrolConfigDao.update(apiPatrolConfig);
             return ResponseEntity.ok(count > 0);
@@ -79,6 +92,7 @@ public class AiAdminApiPatrolController {
     @RequestMapping(value = "deleteApiPatrolConfig", method = RequestMethod.GET)
     public ResponseEntity<Boolean> deleteApiPatrolConfig(@RequestParam("id") Long id) {
         try {
+            apiPatrolResultDao.deleteByPatrolId(id);
             int count = apiPatrolConfigDao.deleteById(id);
             return ResponseEntity.ok(count > 0);
         } catch (Exception e) {

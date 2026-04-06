@@ -150,7 +150,13 @@
                 bootstrap.Modal.getInstance(document.getElementById('patrolModal')).hide();
                 this.loadList();
             },
-            error: () => alert('保存巡检配置失败')
+            error: (xhr) => {
+                if (xhr.status === 400) {
+                    alert('保存失败：请检查 Cron 表达式是否正确');
+                    return;
+                }
+                alert('保存巡检配置失败');
+            }
         });
     },
 

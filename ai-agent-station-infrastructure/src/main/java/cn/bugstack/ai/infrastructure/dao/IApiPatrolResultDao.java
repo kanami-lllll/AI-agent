@@ -19,4 +19,6 @@ public interface IApiPatrolResultDao {
 
     int insert(ApiPatrolResult apiPatrolResult);
 
+    int deleteByPatrolId(Long patrolId);
+
 }

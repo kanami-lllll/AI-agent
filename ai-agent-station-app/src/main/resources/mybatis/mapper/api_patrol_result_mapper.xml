@@ -69,4 +69,9 @@
         )
     </insert>
 
+    <delete id="deleteByPatrolId" parameterType="java.lang.Long">
+        DELETE FROM api_patrol_result
+        WHERE patrol_id = #{patrolId}
+    </delete>
+
 </mapper>
