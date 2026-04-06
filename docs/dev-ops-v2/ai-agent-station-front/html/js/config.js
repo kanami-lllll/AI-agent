@@ -11,3 +11,13 @@ const ApiConfig = {
 };
 
 Object.freeze(ApiConfig);
+
+if (window.location.pathname.includes('/admin/')) {
+    const layoutScriptId = 'admin-layout-script';
+    if (!document.getElementById(layoutScriptId)) {
+        const script = document.createElement('script');
+        script.id = layoutScriptId;
+        script.src = '/admin/js/admin-layout.js';
+        document.head.appendChild(script);
+    }
+}

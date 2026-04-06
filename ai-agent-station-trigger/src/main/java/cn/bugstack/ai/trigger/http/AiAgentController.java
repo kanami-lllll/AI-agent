@@ -9,16 +9,21 @@ import cn.bugstack.ai.types.common.Constants;
 import com.alibaba.fastjson.JSON;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import reactor.core.publisher.Flux;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.Disposable;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
-@RestController()
+@RestController
 @CrossOrigin("*")
 @RequestMapping("/api/v1/ai/agent/")
 public class AiAgentController implements IAiAgentService {
@@ -32,16 +37,11 @@ public class AiAgentController implements IAiAgentService {
     @Resource
     private IAiAgentPreheatService aiAgentPreheatService;
 
-    /**
-     * AI代理预热
-     * curl --request GET \
-     *   --url 'http://localhost:8091/ai-agent-station/api/v1/ai/agent/preheat?aiAgentId=1'
-     */
     @RequestMapping(value = "preheat", method = RequestMethod.GET)
     @Override
     public Response<Boolean> preheat(@RequestParam("aiAgentId") Long aiClientId) {
         try {
-            log.info("预热装配 AiAgent {}", aiClientId);
+            log.info("Preheat ai agent {}", aiClientId);
             aiAgentPreheatService.preheat(aiClientId);
             return Response.<Boolean>builder()
                     .code(Constants.ResponseCode.SUCCESS.getCode())
@@ -49,7 +49,7 @@ public class AiAgentController implements IAiAgentService {
                     .data(true)
                     .build();
         } catch (Exception e) {
-            log.error("预热装配 AiAgent {}", aiClientId,e);
+            log.error("Preheat ai agent failed {}", aiClientId, e);
             return Response.<Boolean>builder()
                     .code(Constants.ResponseCode.UN_ERROR.getCode())
                     .info(Constants.ResponseCode.UN_ERROR.getInfo())
@@ -58,31 +58,21 @@ public class AiAgentController implements IAiAgentService {
         }
     }
 
-    /**
-     * AI代理执行方法，用于处理用户输入的消息并返回AI代理的回复
-     * <p>
-     * 示例请求:
-     * curl -X GET "http://localhost:8091/ai-agent-station/api/v1/ai/agent/chat_agent?aiAgentId=1&message=生成一篇文章" -H "Content-Type: application/json"
-     *
-     * @param aiAgentId AI代理ID，用于标识使用哪个AI代理
-     * @param message   用户输入的消息内容
-     * @return AI代理的回复内容
-     */
     @RequestMapping(value = "chat_agent", method = RequestMethod.GET)
     @Override
     public Response<String> chatAgent(@RequestParam("aiAgentId") Long aiAgentId, @RequestParam("message") String message) {
         try {
-            log.info("AiAgent 智能体对话，请求 {} {}", aiAgentId, message);
+            log.info("Agent chat request {} {}", aiAgentId, message);
             String content = aiAgentChatService.aiAgentChat(aiAgentId, message);
             Response<String> response = Response.<String>builder()
                     .code(Constants.ResponseCode.SUCCESS.getCode())
                     .info(Constants.ResponseCode.SUCCESS.getInfo())
                     .data(content)
                     .build();
-            log.info("AiAgent 智能体对话，结果 {} {}", aiAgentId, JSON.toJSONString(response));
+            log.info("Agent chat response {} {}", aiAgentId, JSON.toJSONString(response));
             return response;
         } catch (Exception e) {
-            log.error("AiAgent 智能体对话，异常 {} {}", aiAgentId, message, e);
+            log.error("Agent chat failed {} {}", aiAgentId, message, e);
             return Response.<String>builder()
                     .code(Constants.ResponseCode.UN_ERROR.getCode())
                     .info(Constants.ResponseCode.UN_ERROR.getInfo())
@@ -90,39 +80,62 @@ public class AiAgentController implements IAiAgentService {
         }
     }
 
-    /**
-     * curl http://localhost:8091/ai-agent-station/api/v1/ai/agent/chat_stream?modelId=1&ragId=1&message=hi
-     */
-    @RequestMapping(value = "chat_stream", method = RequestMethod.GET)
+    @RequestMapping(value = "chat_stream", method = RequestMethod.GET, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Override
-    public Flux<ChatResponse> chatStream(@RequestParam("aiAgentId") Long aiAgentId, @RequestParam("ragId") Long ragId, @RequestParam("message") String message) {
-        try {
-            log.info("AiAgent 智能体对话(stream)，请求 {} {} {}", aiAgentId, ragId, message);
-            return aiAgentChatService.aiAgentChatStream(aiAgentId, ragId, message);
-        } catch (Exception e) {
-            log.error("AiAgent 智能体对话(stream)，失败 {} {} {}", aiAgentId, ragId, message, e);
-            throw e;
-        }
+    public SseEmitter chatStream(@RequestParam("aiAgentId") Long aiAgentId,
+                                 @RequestParam("ragId") Long ragId,
+                                 @RequestParam("message") String message) {
+        log.info("Agent stream request {} {} {}", aiAgentId, ragId, message);
+
+        SseEmitter emitter = new SseEmitter(0L);
+        Disposable[] streamRef = new Disposable[1];
+
+        emitter.onTimeout(() -> {
+            Disposable disposable = streamRef[0];
+            if (disposable != null && !disposable.isDisposed()) {
+                disposable.dispose();
+            }
+            emitter.complete();
+        });
+
+        emitter.onCompletion(() -> {
+            Disposable disposable = streamRef[0];
+            if (disposable != null && !disposable.isDisposed()) {
+                disposable.dispose();
+            }
+            log.info("Agent stream completed {}", aiAgentId);
+        });
+
+        streamRef[0] = aiAgentChatService.aiAgentChatStream(aiAgentId, ragId, message)
+                .subscribe(chatResponse -> {
+                    try {
+                        emitter.send(SseEmitter.event().data(JSON.toJSONString(chatResponse)));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, error -> {
+                    log.error("Agent stream failed {} {} {}", aiAgentId, ragId, message, error);
+                    emitter.completeWithError(error);
+                }, emitter::complete);
+
+        return emitter;
     }
 
-    /**
-     * http://localhost:8091/ai-agent-station/api/v1/ai/agent/file/upload
-     */
     @RequestMapping(value = "file/upload", method = RequestMethod.POST, headers = "content-type=multipart/form-data")
     @Override
-    public Response<Boolean> uploadRagFile(@RequestParam("name") String name, @RequestParam("tag") String tag, @RequestParam("files") List<MultipartFile> files) {
+    public Response<Boolean> uploadRagFile(@RequestParam("name") String name,
+                                           @RequestParam("tag") String tag,
+                                           @RequestParam("files") List<MultipartFile> files) {
         try {
-            log.info("上传知识库，请求 {}", name);
+            log.info("Upload rag file {}", name);
             aiAgentRagService.storeRagFile(name, tag, files);
-            Response<Boolean> response = Response.<Boolean>builder()
+            return Response.<Boolean>builder()
                     .code(Constants.ResponseCode.SUCCESS.getCode())
                     .info(Constants.ResponseCode.SUCCESS.getInfo())
                     .data(true)
                     .build();
-            log.info("上传知识库，结果 {} {}", name, JSON.toJSONString(response));
-            return response;
         } catch (Exception e) {
-            log.error("上传知识库，异常 {}", name, e);
+            log.error("Upload rag file failed {}", name, e);
             return Response.<Boolean>builder()
                     .code(Constants.ResponseCode.UN_ERROR.getCode())
                     .info(Constants.ResponseCode.UN_ERROR.getInfo())
@@ -132,4 +145,3 @@ public class AiAgentController implements IAiAgentService {
     }
 
 }
-
