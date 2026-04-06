@@ -4,10 +4,10 @@
             title: '后台管理',
             summary: '统一维护智能体、模型、提示词、工具、知识库和业务场景配置。',
             role: '如果你第一次进入后台，建议先从“客户端模型管理”或“接口巡检配置”开始。',
-            impact: '这里不是一个普通 CRUD 后台，而是“配置驱动”的运行控制台。',
+            impact: '这里不是普通 CRUD 后台，而是配置驱动的运行控制台。',
             steps: [
                 '先确认首页聊天当前使用的模型连接是否正确。',
-                '再决定要不要继续配置提示词、顾问、工具和知识库。',
+                '再决定是否继续配置提示词、顾问、工具和知识库。',
                 '如果你只关心接口巡检场景，优先进入“接口巡检配置”和“巡检结果记录”。'
             ],
             next: [
@@ -19,12 +19,12 @@
         'ai-agent.html': {
             title: 'AI智能体管理',
             summary: '定义系统里有哪些智能体可用，包括名称、描述、通道和启用状态。',
-            role: '这页定义“智能体本身是谁”，但不直接决定它用哪个模型或工具。',
+            role: '这页定义“智能体本身是谁”，但不直接决定它使用哪个模型或工具。',
             impact: '如果某个智能体被禁用，首页和任务调度都不会再使用它。',
             steps: [
                 '先新增或编辑智能体基础信息。',
                 '再到“智能体客户端关联”里给它绑定执行链路。',
-                '如果它要定时执行，再去“AI代理任务调度”配置 cron。'
+                '如果它需要定时执行，再去“AI代理任务调度”配置 cron。'
             ],
             next: [
                 ['ai-agent-client.html', '继续绑定客户端链路'],
@@ -68,12 +68,12 @@
             impact: '修改当前对话模型设置后，首页聊天会立即使用新的 Base URL、API Key 和模型版本。',
             steps: [
                 '优先使用页面顶部的“当前对话模型设置”。',
-                '如果只是替换当前模型服务，直接改 Base URL、API Key 和模型版本即可。',
+                '如果只是替换当前模型服务，直接修改 Base URL、API Key 和模型版本即可。',
                 '如果你有多个模型连接，先在下方新增，再通过顶部快速切换。'
             ],
             next: [
                 ['ai-client-model-config.html', '查看客户端绑定了哪个模型'],
-                ['ai-agent.html', '确认首页用的是哪个智能体']
+                ['ai-agent.html', '确认首页使用的是哪个智能体']
             ]
         },
         'ai-client-model-config.html': {
@@ -109,8 +109,8 @@
         'ai-client-advisor.html': {
             title: '客户端顾问管理',
             summary: '定义可复用的增强能力，例如会话记忆和 RAG 检索。',
-            role: '这里是“能力定义层”，不是实际生效层。',
-            impact: '只在客户端绑定了 Advisor 后，这些能力才会真正参与运行。',
+            role: '这里是能力定义层，不是实际生效层。',
+            impact: '只有在客户端绑定了 Advisor 后，这些能力才会真正参与运行。',
             steps: [
                 '先定义顾问类型和参数。',
                 '再到顾问配置页面把它绑定给客户端。',
@@ -186,7 +186,7 @@
             steps: [
                 '配置请求方法、URL、请求头和请求体。',
                 '设置状态码、JSON 字段和响应时间断言。',
-                '先手动执行验证，再决定要不要打开定时任务。'
+                '先手动执行验证，再决定是否打开定时任务。'
             ],
             next: [
                 ['ai-api-patrol-result.html', '查看巡检结果和 AI 报告']
@@ -196,7 +196,7 @@
             title: '巡检结果记录',
             summary: '查看每次接口巡检的成功率、失败原因和 AI 生成的回归报告。',
             role: '这是巡检场景的结果面板。',
-            impact: '这里的结果最适合拿来验证场景是否真正可用。',
+            impact: '这里的结果最适合用来验证这个业务场景是否真正可用。',
             steps: [
                 '先执行一次巡检。',
                 '查看返回码、耗时和失败信息。',
@@ -210,36 +210,32 @@
 
     const navGroups = [
         {
-            label: '智能体编排',
+            label: '常用配置',
             items: [
+                ['ai-client-model.html', 'fa-microchip', '当前对话模型'],
                 ['ai-agent.html', 'fa-robot', 'AI智能体管理'],
                 ['ai-agent-client.html', 'fa-link', '智能体客户端关联'],
-                ['ai-agent-task.html', 'fa-tasks', 'AI代理任务调度']
-            ]
-        },
-        {
-            label: '模型与提示词',
-            items: [
-                ['ai-client-model.html', 'fa-microchip', '客户端模型管理'],
-                ['ai-client-model-config.html', 'fa-cogs', '客户端模型配置'],
                 ['ai-client-system-prompt.html', 'fa-comment-dots', '系统提示词管理']
-            ]
-        },
-        {
-            label: '增强能力',
-            items: [
-                ['ai-client-advisor.html', 'fa-user-tie', '客户端顾问管理'],
-                ['ai-client-advisor-config.html', 'fa-sliders', '客户端顾问配置'],
-                ['ai-client-tool-mcp.html', 'fa-screwdriver-wrench', 'MCP工具管理'],
-                ['ai-client-tool-config.html', 'fa-toolbox', '客户端工具配置'],
-                ['ai-rag-order.html', 'fa-database', 'RAG订单管理']
             ]
         },
         {
             label: '业务场景',
             items: [
                 ['ai-api-patrol.html', 'fa-network-wired', '接口巡检配置'],
-                ['ai-api-patrol-result.html', 'fa-clipboard-check', '巡检结果记录']
+                ['ai-api-patrol-result.html', 'fa-clipboard-check', '巡检结果记录'],
+                ['ai-agent-task.html', 'fa-tasks', 'AI代理任务调度']
+            ]
+        },
+        {
+            label: '高级配置',
+            advanced: true,
+            items: [
+                ['ai-client-model-config.html', 'fa-cogs', '客户端模型配置'],
+                ['ai-client-advisor.html', 'fa-user-tie', '客户端顾问管理'],
+                ['ai-client-advisor-config.html', 'fa-sliders', '客户端顾问配置'],
+                ['ai-client-tool-mcp.html', 'fa-screwdriver-wrench', 'MCP工具管理'],
+                ['ai-client-tool-config.html', 'fa-toolbox', '客户端工具配置'],
+                ['ai-rag-order.html', 'fa-database', 'RAG订单管理']
             ]
         }
     ];
@@ -257,6 +253,36 @@
         return isAdminPageDetail() ? file : `page/${file}`;
     }
 
+    function renderGroup(page, group) {
+        const itemsHtml = group.items.map(([file, icon, label]) => {
+            const active = file === page ? 'active' : '';
+            return `
+                <li class="nav-item">
+                    <a class="nav-link ${active}" href="${buildPageHref(file)}">
+                        <i class="fas ${icon}"></i> ${label}
+                    </a>
+                </li>
+            `;
+        }).join('');
+
+        if (group.advanced) {
+            const shouldOpen = group.items.some(([file]) => file === page);
+            return `
+                <details class="admin-nav-group admin-nav-advanced" ${shouldOpen ? 'open' : ''}>
+                    <summary class="admin-nav-group-title admin-nav-summary">${group.label}</summary>
+                    <ul class="nav flex-column pt-2">${itemsHtml}</ul>
+                </details>
+            `;
+        }
+
+        return `
+            <div class="admin-nav-group">
+                <div class="admin-nav-group-title">${group.label}</div>
+                <ul class="nav flex-column">${itemsHtml}</ul>
+            </div>
+        `;
+    }
+
     function renderSidebar() {
         const sidebarBody = document.querySelector('nav.sidebar .position-sticky, #sidebarMenu .position-sticky');
         if (!sidebarBody) {
@@ -264,26 +290,7 @@
         }
 
         const page = currentPage();
-        const html = navGroups.map((group) => {
-            const itemsHtml = group.items.map(([file, icon, label]) => {
-                const active = file === page ? 'active' : '';
-                return `
-                    <li class="nav-item">
-                        <a class="nav-link ${active}" href="${buildPageHref(file)}">
-                            <i class="fas ${icon}"></i> ${label}
-                        </a>
-                    </li>
-                `;
-            }).join('');
-
-            return `
-                <div class="admin-nav-group">
-                    <div class="admin-nav-group-title">${group.label}</div>
-                    <ul class="nav flex-column">${itemsHtml}</ul>
-                </div>
-            `;
-        }).join('');
-
+        const html = navGroups.map((group) => renderGroup(page, group)).join('');
         sidebarBody.innerHTML = html;
     }
 
@@ -295,8 +302,7 @@
         const brand = document.querySelector('.navbar-brand');
         if (brand) {
             brand.textContent = 'AI Agent Console';
-            const href = isAdminPageDetail() ? '../index.html' : 'index.html';
-            brand.setAttribute('href', href);
+            brand.setAttribute('href', isAdminPageDetail() ? '../index.html' : 'index.html');
         }
 
         const heading = document.querySelector('main h1.h2, main h1.h3, main .border-bottom h1');
@@ -387,11 +393,11 @@
                 <div class="row g-3">
                     <div class="col-lg-4">
                         <div class="overview-title">1. 先配当前聊天模型</div>
-                        <div class="text-muted small">先把首页聊天实际使用的模型服务配通，再谈提示词、工具和顾问。</div>
+                        <div class="text-muted small">优先把首页聊天实际使用的模型服务配置正确，再去调提示词和工具。</div>
                         <div class="mt-2">${renderLinks([['ai-client-model.html', '打开模型设置']])}</div>
                     </div>
                     <div class="col-lg-4">
-                        <div class="overview-title">2. 再理解配置驱动链路</div>
+                        <div class="overview-title">2. 再理解编排链路</div>
                         <div class="text-muted small">智能体定义、客户端绑定、模型配置、提示词、顾问和工具是分层配置的。</div>
                         <div class="mt-2">${renderLinks([
                             ['ai-agent.html', '看智能体定义'],
@@ -399,8 +405,8 @@
                         ])}</div>
                     </div>
                     <div class="col-lg-4">
-                        <div class="overview-title">3. 最后进入业务场景</div>
-                        <div class="text-muted small">如果你主要关注接口巡检，这部分已经是当前项目最完整、最容易验证的业务模块。</div>
+                        <div class="overview-title">3. 进入业务场景</div>
+                        <div class="text-muted small">接口巡检是当前项目最完整、最容易验证、也最适合演示的业务模块。</div>
                         <div class="mt-2">${renderLinks([
                             ['ai-api-patrol.html', '配置巡检接口'],
                             ['ai-api-patrol-result.html', '查看巡检结果']
@@ -431,6 +437,18 @@
                 font-weight: 700;
                 letter-spacing: 0.08em;
                 text-transform: uppercase;
+            }
+            .admin-nav-summary {
+                cursor: pointer;
+                list-style: none;
+            }
+            .admin-nav-summary::-webkit-details-marker {
+                display: none;
+            }
+            .admin-nav-advanced {
+                padding-bottom: 0.25rem;
+                border-top: 1px dashed rgba(0, 0, 0, 0.08);
+                padding-top: 0.75rem;
             }
             .page-intro-card {
                 background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
