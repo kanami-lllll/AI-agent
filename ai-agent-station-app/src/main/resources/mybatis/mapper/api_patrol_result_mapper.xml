@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bugstack.ai.infrastructure.dao.IApiPatrolResultDao">
+
+    <resultMap id="dataMap" type="cn.bugstack.ai.infrastructure.dao.po.ApiPatrolResult">
+        <id column="id" property="id"/>
+        <result column="patrol_id" property="patrolId"/>
+        <result column="patrol_name" property="patrolName"/>
+        <result column="success" property="success"/>
+        <result column="response_code" property="responseCode"/>
+        <result column="response_time" property="responseTime"/>
+        <result column="response_body" property="responseBody"/>
+        <result column="error_message" property="errorMessage"/>
+        <result column="ai_report" property="aiReport"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="queryApiPatrolResultList" parameterType="cn.bugstack.ai.infrastructure.dao.po.ApiPatrolResult" resultMap="dataMap">
+        SELECT
+            r.id, r.patrol_id, c.patrol_name, r.success, r.response_code, r.response_time,
+            r.response_body, r.error_message, r.ai_report, r.create_time
+        FROM api_patrol_result r
+        LEFT JOIN api_patrol_config c ON r.patrol_id = c.id
+        <where>
+            <if test="id != null">
+                AND r.id = #{id}
+            </if>
+            <if test="patrolId != null">
+                AND r.patrol_id = #{patrolId}
+            </if>
+            <if test="success != null">
+                AND r.success = #{success}
+            </if>
+            <if test="patrolName != null and patrolName != ''">
+                AND c.patrol_name LIKE CONCAT('%', #{patrolName}, '%')
+            </if>
+        </where>
+        ORDER BY r.create_time DESC
+        <if test="pageSize != null and pageSize > 0">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryApiPatrolResultById" parameterType="java.lang.Long" resultMap="dataMap">
+        SELECT
+            r.id, r.patrol_id, c.patrol_name, r.success, r.response_code, r.response_time,
+            r.response_body, r.error_message, r.ai_report, r.create_time
+        FROM api_patrol_result r
+        LEFT JOIN api_patrol_config c ON r.patrol_id = c.id
+        WHERE r.id = #{id}
+    </select>
+
+    <select id="queryLatestApiPatrolResultByPatrolId" parameterType="java.lang.Long" resultMap="dataMap">
+        SELECT
+            r.id, r.patrol_id, c.patrol_name, r.success, r.response_code, r.response_time,
+            r.response_body, r.error_message, r.ai_report, r.create_time
+        FROM api_patrol_result r
+        LEFT JOIN api_patrol_config c ON r.patrol_id = c.id
+        WHERE r.patrol_id = #{patrolId}
+        ORDER BY r.create_time DESC
+        LIMIT 1
+    </select>
+
+    <insert id="insert" parameterType="cn.bugstack.ai.infrastructure.dao.po.ApiPatrolResult" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO api_patrol_result (
+            patrol_id, success, response_code, response_time, response_body, error_message, ai_report, create_time
+        ) VALUES (
+            #{patrolId}, #{success}, #{responseCode}, #{responseTime}, #{responseBody}, #{errorMessage}, #{aiReport}, #{createTime}
+        )
+    </insert>
+
+</mapper>

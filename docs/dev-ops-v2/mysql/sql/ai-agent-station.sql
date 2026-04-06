@@ -369,6 +369,62 @@ LOCK TABLES `ai_client_tool_mcp` WRITE;
 UNLOCK TABLES;
 
 
+# 转储表 api_patrol_config
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `api_patrol_config`;
+
+CREATE TABLE `api_patrol_config` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `patrol_name` varchar(64) NOT NULL COMMENT '巡检名称',
+  `request_method` varchar(16) NOT NULL COMMENT '请求方法',
+  `request_url` varchar(512) NOT NULL COMMENT '请求地址',
+  `request_headers` text COMMENT '请求头(JSON)',
+  `request_body` text COMMENT '请求体',
+  `timeout` int(11) DEFAULT '5000' COMMENT '超时时间(毫秒)',
+  `expected_status_code` int(11) DEFAULT '200' COMMENT '预期状态码',
+  `expected_json_field` varchar(255) DEFAULT NULL COMMENT '预期存在的 JSON 字段路径',
+  `max_response_time` int(11) DEFAULT '3000' COMMENT '最大响应时间(毫秒)',
+  `status` tinyint(1) DEFAULT '1' COMMENT '状态(0:禁用,1:启用)',
+  `task_status` tinyint(1) DEFAULT '0' COMMENT '调度状态(0:关闭,1:开启)',
+  `cron_expression` varchar(64) DEFAULT NULL COMMENT '巡检任务Cron表达式',
+  `remark` varchar(1024) DEFAULT NULL COMMENT '备注',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='接口巡检配置表';
+
+LOCK TABLES `api_patrol_config` WRITE;
+/*!40000 ALTER TABLE `api_patrol_config` DISABLE KEYS */;
+
+INSERT INTO `api_patrol_config` (`id`, `patrol_name`, `request_method`, `request_url`, `request_headers`, `request_body`, `timeout`, `expected_status_code`, `expected_json_field`, `max_response_time`, `status`, `task_status`, `cron_expression`, `remark`, `create_time`, `update_time`)
+VALUES
+	(1,'预热接口检查','GET','http://localhost:8091/ai-agent-station/api/v1/ai/agent/preheat?aiAgentId=1',NULL,NULL,5000,200,NULL,3000,1,0,NULL,'默认示例巡检配置','2026-01-01 00:00:00','2026-01-01 00:00:00');
+
+/*!40000 ALTER TABLE `api_patrol_config` ENABLE KEYS */;
+UNLOCK TABLES;
+
+
+# 转储表 api_patrol_result
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `api_patrol_result`;
+
+CREATE TABLE `api_patrol_result` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `patrol_id` bigint(20) NOT NULL COMMENT '巡检配置ID',
+  `success` tinyint(1) DEFAULT '0' COMMENT '是否成功(0:失败,1:成功)',
+  `response_code` int(11) DEFAULT NULL COMMENT '响应状态码',
+  `response_time` bigint(20) DEFAULT NULL COMMENT '响应耗时(毫秒)',
+  `response_body` longtext COMMENT '响应体',
+  `error_message` varchar(2048) DEFAULT NULL COMMENT '失败原因',
+  `ai_report` longtext COMMENT 'AI 巡检报告',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_patrol_id` (`patrol_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='接口巡检结果表';
+
+
 # 转储表 ai_rag_order
 # ------------------------------------------------------------
 
@@ -391,4 +447,7 @@ CREATE TABLE `ai_rag_order` (
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+
 
