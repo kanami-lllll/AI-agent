@@ -1,0 +1,119 @@
+name: ai-agent-station
+
+services:
+  mysql:
+    image: mysql:8.0.32
+    container_name: ai-agent-station-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      SPRING_AI_OPENAI_BASE_URL: ${SPRING_AI_OPENAI_BASE_URL}
+      SPRING_AI_OPENAI_API_KEY: ${SPRING_AI_OPENAI_API_KEY}
+      OPENAI_CHAT_MODEL: ${OPENAI_CHAT_MODEL}
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ../../docs/dev-ops-v2/mysql/sql/ai-agent-station.sql:/docker-entrypoint-initdb.d/00-ai-agent-station.sql:ro
+      - ./mysql/98-init-model-config.sh:/docker-entrypoint-initdb.d/98-init-model-config.sh:ro
+      - ./mysql/99-minimal-data.sql:/docker-entrypoint-initdb.d/99-minimal-data.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 20s
+
+  vector_db:
+    image: pgvector/pgvector:pg16
+    container_name: ai-agent-station-pgvector
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${PG_PORT}:5432"
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+      - ../../docs/dev-ops-v2/pgvector/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 20s
+
+  ai-agent-station-app:
+    image: ${AI_AGENT_STATION_APP_IMAGE}
+    container_name: ai-agent-station-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      vector_db:
+        condition: service_healthy
+    environment:
+      TZ: PRC
+      SERVER_PORT: 8091
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ai-agent-station?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&useSSL=false
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_AI_VECTORSTORE_PGVECTOR_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_AI_VECTORSTORE_PGVECTOR_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_AI_VECTORSTORE_PGVECTOR_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_AI_VECTORSTORE_PGVECTOR_DATASOURCE_URL: jdbc:postgresql://vector_db:5432/${POSTGRES_DB}?connectTimeout=120
+      SPRING_AI_OPENAI_BASE_URL: ${SPRING_AI_OPENAI_BASE_URL}
+      SPRING_AI_OPENAI_API_KEY: ${SPRING_AI_OPENAI_API_KEY}
+    ports:
+      - "${APP_PORT}:8091"
+    volumes:
+      - ./data/log:/data/log
+
+  frontend:
+    image: nginx:1.27-alpine
+    container_name: ai-agent-station-frontend
+    restart: unless-stopped
+    depends_on:
+      - ai-agent-station-app
+    ports:
+      - "${FRONTEND_PORT}:80"
+    volumes:
+      - ../../docs/dev-ops-v2/ai-agent-station-front/html:/usr/share/nginx/html:ro
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.1
+    container_name: ai-agent-station-phpmyadmin
+    profiles: ["tools"]
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "${PMA_PORT}:80"
+
+  pgadmin:
+    image: dpage/pgadmin4:9.1.0
+    container_name: ai-agent-station-pgadmin
+    profiles: ["tools"]
+    restart: unless-stopped
+    depends_on:
+      vector_db:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT}:80"
+
+volumes:
+  mysql_data:
+  pgvector_data:

@@ -1,0 +1,50 @@
+server:
+  port: 8091
+  servlet:
+    context-path: /ai-agent-station
+
+thread:
+  pool:
+    executor:
+      config:
+        core-pool-size: 20
+        max-pool-size: 50
+        keep-alive-time: 5000
+        block-queue-size: 5000
+        policy: CallerRunsPolicy
+
+spring:
+  datasource:
+    username: root
+    password: 123456
+    url: jdbc:mysql://127.0.0.1:3306/ai-agent-station?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&useSSL=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+  main:
+    allow-bean-definition-overriding: true
+  ai:
+    vectorstore:
+      pgvector:
+        datasource:
+          driver-class-name: org.postgresql.Driver
+          username: postgres
+          password: postgres
+          url: jdbc:postgresql://127.0.0.1:5432/ai-rag-knowledge
+          type: com.zaxxer.hikari.HikariDataSource
+    openai:
+      base-url: https://api.openai.com
+      api-key: replace-with-your-api-key
+
+mybatis:
+  mapper-locations: classpath:/mybatis/mapper/*.xml
+  config-location: classpath:/mybatis/config/mybatis-config.xml
+
+logging:
+  level:
+    root: info
+  config: classpath:logback-spring.xml
