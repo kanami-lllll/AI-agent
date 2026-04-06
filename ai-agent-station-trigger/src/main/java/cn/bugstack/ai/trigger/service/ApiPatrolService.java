@@ -1,4 +1,4 @@
-﻿package cn.bugstack.ai.trigger.service;
+package cn.bugstack.ai.trigger.service;
 
 import cn.bugstack.ai.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
 import cn.bugstack.ai.infrastructure.dao.IApiPatrolConfigDao;

@@ -1,4 +1,4 @@
-﻿package cn.bugstack.ai.api;
+package cn.bugstack.ai.api;
 
 import cn.bugstack.ai.api.response.Response;
 import org.springframework.ai.chat.model.ChatResponse;

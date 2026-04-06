@@ -1,4 +1,4 @@
-﻿package cn.bugstack.ai.trigger.http;
+package cn.bugstack.ai.trigger.http;
 
 import cn.bugstack.ai.api.IAiAgentService;
 import cn.bugstack.ai.api.response.Response;

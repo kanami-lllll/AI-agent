@@ -1,4 +1,4 @@
-﻿package cn.bugstack.ai.trigger.job;
+package cn.bugstack.ai.trigger.job;
 
 import cn.bugstack.ai.infrastructure.dao.IApiPatrolConfigDao;
 import cn.bugstack.ai.infrastructure.dao.po.ApiPatrolConfig;

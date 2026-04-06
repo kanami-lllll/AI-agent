@@ -15,7 +15,9 @@ services:
     ports:
       - "${MYSQL_PORT}:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - type: bind
+        source: E:/docker-data/ai-agent-station/mysql
+        target: /var/lib/mysql
       - ../../docs/dev-ops-v2/mysql/sql/ai-agent-station.sql:/docker-entrypoint-initdb.d/00-ai-agent-station.sql:ro
       - ./mysql/98-init-model-config.sh:/docker-entrypoint-initdb.d/98-init-model-config.sh:ro
       - ./mysql/99-minimal-data.sql:/docker-entrypoint-initdb.d/99-minimal-data.sql:ro
@@ -38,7 +40,9 @@ services:
     ports:
       - "${PG_PORT}:5432"
     volumes:
-      - pgvector_data:/var/lib/postgresql/data
+      - type: bind
+        source: E:/docker-data/ai-agent-station/pgvector
+        target: /var/lib/postgresql/data
       - ../../docs/dev-ops-v2/pgvector/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -72,7 +76,9 @@ services:
     ports:
       - "${APP_PORT}:8091"
     volumes:
-      - ./data/log:/data/log
+      - type: bind
+        source: E:/docker-data/ai-agent-station/log
+        target: /data/log
 
   frontend:
     image: nginx:1.27-alpine
@@ -113,7 +119,3 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "${PGADMIN_PORT}:80"
-
-volumes:
-  mysql_data:
-  pgvector_data:

@@ -1,4 +1,4 @@
-﻿package cn.bugstack.ai.infrastructure.dao.po;
+package cn.bugstack.ai.infrastructure.dao.po;
 
 import cn.bugstack.ai.infrastructure.dao.po.base.Page;
 import lombok.Data;

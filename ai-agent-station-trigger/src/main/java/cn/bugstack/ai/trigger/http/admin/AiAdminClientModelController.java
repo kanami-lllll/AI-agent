@@ -1,4 +1,4 @@
-﻿package cn.bugstack.ai.trigger.http.admin;
+package cn.bugstack.ai.trigger.http.admin;
 
 import cn.bugstack.ai.infrastructure.dao.IAiClientModelDao;
 import cn.bugstack.ai.infrastructure.dao.po.AiClientModel;
