@@ -1,19 +1,19 @@
 const ApiPatrolResultManager = {
-    init: function () {
+    init() {
         this.bindEvents();
         this.loadList();
     },
 
-    bindEvents: function () {
+    bindEvents() {
         $('#btn-search-result').on('click', () => this.loadList());
-        $('#search-result-patrol-name').on('keypress', (e) => {
-            if (e.which === 13) {
+        $('#search-result-patrol-name').on('keypress', (event) => {
+            if (event.which === 13) {
                 this.loadList();
             }
         });
     },
 
-    loadList: function () {
+    loadList() {
         const params = {
             patrolName: $('#search-result-patrol-name').val()
         };
@@ -28,33 +28,30 @@ const ApiPatrolResultManager = {
         });
     },
 
-    renderList: function (list) {
+    renderList(list) {
         if (!list.length) {
             $('#result-list').html('<tr><td colspan="7" class="text-center">暂无数据</td></tr>');
             return;
         }
 
-        let html = '';
-        list.forEach(item => {
-            html += `
-                <tr>
-                    <td>${item.id}</td>
-                    <td>${item.patrolName || '-'}</td>
-                    <td>${item.success === 1 ? '<span class="badge bg-success">成功</span>' : '<span class="badge bg-danger">失败</span>'}</td>
-                    <td>${item.responseCode ?? '-'}</td>
-                    <td>${item.responseTime ?? '-'} ms</td>
-                    <td>${this.formatDate(item.createTime)}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="ApiPatrolResultManager.view(${item.id})">查看</button>
-                    </td>
-                </tr>
-            `;
-        });
+        const html = list.map((item) => `
+            <tr>
+                <td>${item.id}</td>
+                <td>${item.patrolName || '-'}</td>
+                <td>${item.success === 1 ? '<span class="badge bg-success">成功</span>' : '<span class="badge bg-danger">失败</span>'}</td>
+                <td>${item.responseCode ?? '-'}</td>
+                <td>${item.responseTime ?? '-'} ms</td>
+                <td>${this.formatDate(item.createTime)}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="ApiPatrolResultManager.view(${item.id})">查看</button>
+                </td>
+            </tr>
+        `).join('');
 
         $('#result-list').html(html);
     },
 
-    view: function (id) {
+    view(id) {
         $.ajax({
             url: ApiConfig.getApiUrl(`/ai/admin/api/patrol/queryApiPatrolResultById?id=${id}`),
             type: 'GET',
@@ -74,7 +71,7 @@ const ApiPatrolResultManager = {
         });
     },
 
-    formatDate: function (dateStr) {
+    formatDate(dateStr) {
         if (!dateStr) {
             return '-';
         }
@@ -82,6 +79,6 @@ const ApiPatrolResultManager = {
     }
 };
 
-$(document).ready(function () {
+$(document).ready(() => {
     ApiPatrolResultManager.init();
 });

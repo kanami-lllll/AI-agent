@@ -99,7 +99,7 @@ const ClientModelManager = {
 
     renderCurrentChatModelSetting(model) {
         if (!model) {
-            $('#current-chat-model-meta').text('当前没有可用的首页聊天模型配置');
+            $('#current-chat-model-meta').text('当前没有可用的首页聊天模型配置。');
             return;
         }
 

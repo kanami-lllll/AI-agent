@@ -419,6 +419,18 @@
         anchor.insertAdjacentElement('afterend', card);
     }
 
+    function renderPageFooter() {
+        const main = document.querySelector('main');
+        if (!main || main.querySelector('.admin-page-footer')) {
+            return;
+        }
+
+        const footer = document.createElement('div');
+        footer.className = 'admin-page-footer text-end text-muted small mt-4 mb-3';
+        footer.textContent = '维护：怀化学院郑岳桓';
+        main.appendChild(footer);
+    }
+
     function injectStyles() {
         if (document.getElementById('admin-layout-style')) {
             return;
@@ -460,6 +472,9 @@
                 color: #0f172a;
                 margin-bottom: 0.5rem;
             }
+            .admin-page-footer {
+                opacity: 0.72;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -470,5 +485,6 @@
         updateHeaderAndTitle();
         renderPageIntro();
         renderIndexOverview();
+        renderPageFooter();
     });
 })();

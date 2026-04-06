@@ -568,7 +568,7 @@ async function initializePage() {
             fetchPromptTemplates()
         ]);
     } catch (error) {
-        console.error('初始化首页数据失败:', error);
+        console.error('初始化首页数据失败', error);
     }
 
     updateChatList();
