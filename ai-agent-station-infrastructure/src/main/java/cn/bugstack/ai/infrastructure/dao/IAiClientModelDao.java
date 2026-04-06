@@ -69,4 +69,9 @@ public interface IAiClientModelDao {
      */
     List<AiClientModel> queryClientModelList(AiClientModel aiClientModel);
 
+    /**
+     * 查询当前首页流式对话默认使用的模型配置
+     */
+    AiClientModel queryCurrentChatModelSetting();
+
 }

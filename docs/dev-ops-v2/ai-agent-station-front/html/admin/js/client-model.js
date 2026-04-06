@@ -8,6 +8,7 @@ const ClientModelManager = {
     init() {
         this.bindEvents();
         this.loadClientModelList();
+        this.loadCurrentChatModelSetting();
     },
 
     bindEvents() {
@@ -16,8 +17,8 @@ const ClientModelManager = {
             this.loadClientModelList();
         });
 
-        $('#search-model-name').on('keypress', (e) => {
-            if (e.which === 13) {
+        $('#search-model-name').on('keypress', (event) => {
+            if (event.which === 13) {
                 this.currentPage = 1;
                 this.loadClientModelList();
             }
@@ -36,12 +37,28 @@ const ClientModelManager = {
         });
 
         $('#btn-toggle-api-key').on('click', () => {
-            const input = $('#client-model-api-key');
-            const currentType = input.attr('type');
-            const nextType = currentType === 'password' ? 'text' : 'password';
-            input.attr('type', nextType);
-            $('#btn-toggle-api-key').text(nextType === 'password' ? '显示' : '隐藏');
+            this.togglePasswordInput('#client-model-api-key', '#btn-toggle-api-key');
         });
+
+        $('#btn-toggle-current-chat-api-key').on('click', () => {
+            this.togglePasswordInput('#current-chat-model-api-key', '#btn-toggle-current-chat-api-key');
+        });
+
+        $('#btn-save-current-chat-model').on('click', () => {
+            this.saveCurrentChatModelSetting();
+        });
+
+        $('#btn-switch-current-chat-model').on('click', () => {
+            this.switchCurrentChatModel();
+        });
+    },
+
+    togglePasswordInput(inputSelector, buttonSelector) {
+        const input = $(inputSelector);
+        const currentType = input.attr('type');
+        const nextType = currentType === 'password' ? 'text' : 'password';
+        input.attr('type', nextType);
+        $(buttonSelector).text(nextType === 'password' ? '显示' : '隐藏');
     },
 
     loadClientModelList() {
@@ -57,13 +74,71 @@ const ClientModelManager = {
             contentType: 'application/json',
             data: JSON.stringify(params),
             success: (res) => {
-                this.renderClientModelList(res);
+                this.renderClientModelList(res || []);
+                this.renderCurrentModelOptions(res || []);
                 this.renderPagination();
             },
             error: () => {
                 alert('加载客户端模型列表失败');
             }
         });
+    },
+
+    loadCurrentChatModelSetting() {
+        $.ajax({
+            url: ApiConfig.getApiUrl('/ai/admin/client/model/queryCurrentChatModelSetting'),
+            type: 'GET',
+            success: (res) => {
+                this.renderCurrentChatModelSetting(res);
+            },
+            error: () => {
+                $('#current-chat-model-meta').text('加载当前聊天模型信息失败');
+            }
+        });
+    },
+
+    renderCurrentChatModelSetting(model) {
+        if (!model) {
+            $('#current-chat-model-meta').text('当前没有可用的首页聊天模型配置');
+            return;
+        }
+
+        $('#current-chat-model-meta').html(`
+            当前首页智能体：<strong>${this.escapeHtml(model.agentName || '-')}</strong>
+            <span class="mx-2">|</span>
+            客户端 ID：<strong>${model.clientId || '-'}</strong>
+            <span class="mx-2">|</span>
+            当前模型：<strong>${this.escapeHtml(model.modelName || '-')}</strong>
+        `);
+
+        $('#current-chat-model-select').val(String(model.id));
+        $('#current-chat-model-name').val(model.modelName || '');
+        $('#current-chat-model-type').val(model.modelType || 'openai');
+        $('#current-chat-model-version').val(model.modelVersion || '');
+        $('#current-chat-model-base-url').val(model.baseUrl || '');
+        $('#current-chat-model-api-key').val(model.apiKey || '');
+        $('#current-chat-model-completions-path').val(model.completionsPath || 'v1/chat/completions');
+        $('#current-chat-model-embeddings-path').val(model.embeddingsPath || 'v1/embeddings');
+        $('#current-chat-model-timeout').val(model.timeout || 30);
+    },
+
+    renderCurrentModelOptions(data) {
+        const select = $('#current-chat-model-select');
+        const selectedValue = select.val();
+        select.empty();
+
+        if (!data || data.length === 0) {
+            select.append('<option value="">暂无可切换模型</option>');
+            return;
+        }
+
+        data.forEach((item) => {
+            select.append(`<option value="${item.id}">${this.escapeHtml(item.modelName || `模型 ${item.id}`)}</option>`);
+        });
+
+        if (selectedValue) {
+            select.val(selectedValue);
+        }
     },
 
     renderClientModelList(data) {
@@ -77,13 +152,13 @@ const ClientModelManager = {
         this.total = data[0].total || 0;
         this.pages = data[0].pages || 0;
 
-        const html = data.map(item => `
+        const html = data.map((item) => `
             <tr>
                 <td>${item.id}</td>
-                <td>${item.modelName || '-'}</td>
-                <td class="d-none d-md-table-cell">${item.modelType || '-'}</td>
+                <td>${this.escapeHtml(item.modelName || '-')}</td>
+                <td class="d-none d-md-table-cell">${this.escapeHtml(item.modelType || '-')}</td>
                 <td class="d-none d-lg-table-cell">${this.escapeHtml(item.baseUrl || '-')}</td>
-                <td class="d-none d-lg-table-cell">${item.modelVersion || '-'}</td>
+                <td class="d-none d-lg-table-cell">${this.escapeHtml(item.modelVersion || '-')}</td>
                 <td class="d-none d-xl-table-cell masked-key">${this.maskApiKey(item.apiKey)}</td>
                 <td>${item.status === 1 ? '<span class="badge bg-success">启用</span>' : '<span class="badge bg-secondary">禁用</span>'}</td>
                 <td class="d-none d-md-table-cell">${this.formatDate(item.updateTime)}</td>
@@ -189,40 +264,13 @@ const ClientModelManager = {
     },
 
     saveClientModel() {
-        const params = {
-            modelName: $('#client-model-name').val().trim(),
-            modelType: $('#client-model-type').val(),
-            modelVersion: $('#client-model-version').val().trim(),
-            baseUrl: $('#client-model-base-url').val().trim(),
-            apiKey: $('#client-model-api-key').val().trim(),
-            completionsPath: $('#client-model-completions-path').val().trim(),
-            embeddingsPath: $('#client-model-embeddings-path').val().trim(),
-            timeout: parseInt($('#client-model-timeout').val(), 10),
-            status: parseInt($('#client-model-status').val(), 10)
-        };
-
-        if (!params.modelName) {
-            alert('请输入模型名称');
-            return;
-        }
-        if (!params.baseUrl) {
-            alert('请输入基础地址');
-            return;
-        }
-        if (!params.apiKey) {
-            alert('请输入 API Key');
-            return;
-        }
-        if (!params.modelVersion) {
-            alert('请输入模型版本');
-            return;
-        }
-        if (!params.timeout || params.timeout <= 0) {
-            alert('超时时间必须大于 0');
-            return;
-        }
-
+        const params = this.collectModelForm('#client-model');
         const id = $('#client-model-id').val();
+
+        if (!this.validateModelForm(params)) {
+            return;
+        }
+
         const url = id
             ? '/ai/admin/client/model/updateClientModel'
             : '/ai/admin/client/model/addClientModel';
@@ -244,12 +292,107 @@ const ClientModelManager = {
 
                 bootstrap.Modal.getInstance(document.getElementById('clientModelModal')).hide();
                 this.loadClientModelList();
+                this.loadCurrentChatModelSetting();
                 alert(id ? '更新成功' : '新增成功');
             },
             error: () => {
                 alert(id ? '更新客户端模型失败' : '新增客户端模型失败');
             }
         });
+    },
+
+    saveCurrentChatModelSetting() {
+        const params = this.collectModelForm('#current-chat-model');
+        params.status = 1;
+
+        if (!this.validateModelForm(params)) {
+            return;
+        }
+
+        $.ajax({
+            url: ApiConfig.getApiUrl('/ai/admin/client/model/updateCurrentChatModelSetting'),
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(params),
+            success: (res) => {
+                if (!res) {
+                    alert('保存当前聊天模型失败');
+                    return;
+                }
+
+                this.loadClientModelList();
+                this.loadCurrentChatModelSetting();
+                alert('当前聊天模型已更新并立即生效');
+            },
+            error: () => {
+                alert('更新当前聊天模型失败');
+            }
+        });
+    },
+
+    switchCurrentChatModel() {
+        const targetModelId = $('#current-chat-model-select').val();
+        if (!targetModelId) {
+            alert('请先选择一个可切换模型');
+            return;
+        }
+
+        $.ajax({
+            url: ApiConfig.getApiUrl('/ai/admin/client/model/switchCurrentChatModel'),
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ id: parseInt(targetModelId, 10) }),
+            success: (res) => {
+                if (!res) {
+                    alert('切换当前聊天模型失败');
+                    return;
+                }
+
+                this.loadClientModelList();
+                this.loadCurrentChatModelSetting();
+                alert('当前聊天模型已切换并立即生效');
+            },
+            error: () => {
+                alert('切换当前聊天模型失败');
+            }
+        });
+    },
+
+    collectModelForm(prefix) {
+        return {
+            modelName: $(`${prefix}-name`).val().trim(),
+            modelType: $(`${prefix}-type`).val(),
+            modelVersion: $(`${prefix}-version`).val().trim(),
+            baseUrl: $(`${prefix}-base-url`).val().trim(),
+            apiKey: $(`${prefix}-api-key`).val().trim(),
+            completionsPath: $(`${prefix}-completions-path`).val().trim(),
+            embeddingsPath: $(`${prefix}-embeddings-path`).val().trim(),
+            timeout: parseInt($(`${prefix}-timeout`).val(), 10)
+        };
+    },
+
+    validateModelForm(params) {
+        if (!params.modelName) {
+            alert('请输入模型名称');
+            return false;
+        }
+        if (!params.baseUrl) {
+            alert('请输入 Base URL');
+            return false;
+        }
+        if (!params.apiKey) {
+            alert('请输入 API Key');
+            return false;
+        }
+        if (!params.modelVersion) {
+            alert('请输入模型版本');
+            return false;
+        }
+        if (!params.timeout || params.timeout <= 0) {
+            alert('超时时间必须大于 0');
+            return false;
+        }
+        return true;
     },
 
     showDeleteModal(id) {
@@ -274,6 +417,7 @@ const ClientModelManager = {
 
                 bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
                 this.loadClientModelList();
+                this.loadCurrentChatModelSetting();
                 alert('删除成功');
             },
             error: () => {
@@ -293,7 +437,7 @@ const ClientModelManager = {
     },
 
     escapeHtml(value) {
-        return value
+        return String(value)
             .replaceAll('&', '&amp;')
             .replaceAll('<', '&lt;')
             .replaceAll('>', '&gt;')

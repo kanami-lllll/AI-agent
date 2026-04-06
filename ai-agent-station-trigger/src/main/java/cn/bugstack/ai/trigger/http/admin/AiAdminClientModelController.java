@@ -1,6 +1,9 @@
 package cn.bugstack.ai.trigger.http.admin;
 
+import cn.bugstack.ai.domain.agent.service.IAiAgentPreheatService;
+import cn.bugstack.ai.infrastructure.dao.IAiClientModelConfigDao;
 import cn.bugstack.ai.infrastructure.dao.IAiClientModelDao;
+import cn.bugstack.ai.infrastructure.dao.po.AiClientModelConfig;
 import cn.bugstack.ai.infrastructure.dao.po.AiClientModel;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +26,12 @@ public class AiAdminClientModelController {
 
     @Resource
     private IAiClientModelDao aiClientModelDao;
+
+    @Resource
+    private IAiClientModelConfigDao aiClientModelConfigDao;
+
+    @Resource
+    private IAiAgentPreheatService aiAgentPreheatService;
 
     @RequestMapping(value = "queryClientModelList", method = RequestMethod.POST)
     public ResponseEntity<List<AiClientModel>> queryClientModelList(@RequestBody AiClientModel aiClientModel) {
@@ -58,6 +67,17 @@ public class AiAdminClientModelController {
         }
     }
 
+    @RequestMapping(value = "queryCurrentChatModelSetting", method = RequestMethod.GET)
+    public ResponseEntity<AiClientModel> queryCurrentChatModelSetting() {
+        try {
+            AiClientModel aiClientModel = aiClientModelDao.queryCurrentChatModelSetting();
+            return ResponseEntity.ok(aiClientModel);
+        } catch (Exception e) {
+            log.error("Query current chat model setting failed", e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
     @RequestMapping(value = "addClientModel", method = RequestMethod.POST)
     public ResponseEntity<Boolean> addClientModel(@RequestBody AiClientModel aiClientModel) {
         try {
@@ -79,6 +99,52 @@ public class AiAdminClientModelController {
             return ResponseEntity.ok(count > 0);
         } catch (Exception e) {
             log.error("Update client model failed {}", aiClientModel.getId(), e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @RequestMapping(value = "updateCurrentChatModelSetting", method = RequestMethod.POST)
+    public ResponseEntity<Boolean> updateCurrentChatModelSetting(@RequestBody AiClientModel aiClientModel) {
+        try {
+            AiClientModel currentModel = aiClientModelDao.queryCurrentChatModelSetting();
+            if (currentModel == null) {
+                return ResponseEntity.ok(false);
+            }
+
+            aiClientModel.setId(currentModel.getId());
+            aiClientModel.setUpdateTime(new Date());
+            int count = aiClientModelDao.update(aiClientModel);
+            if (count > 0) {
+                aiAgentPreheatService.preheat(currentModel.getClientId());
+            }
+            return ResponseEntity.ok(count > 0);
+        } catch (Exception e) {
+            log.error("Update current chat model setting failed", e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @RequestMapping(value = "switchCurrentChatModel", method = RequestMethod.POST)
+    public ResponseEntity<Boolean> switchCurrentChatModel(@RequestBody AiClientModel aiClientModel) {
+        try {
+            AiClientModel currentModel = aiClientModelDao.queryCurrentChatModelSetting();
+            if (currentModel == null || aiClientModel.getId() == null) {
+                return ResponseEntity.ok(false);
+            }
+
+            AiClientModelConfig aiClientModelConfig = aiClientModelConfigDao.queryModelConfigByClientId(currentModel.getClientId());
+            if (aiClientModelConfig == null) {
+                return ResponseEntity.ok(false);
+            }
+
+            aiClientModelConfig.setModelId(aiClientModel.getId());
+            int count = aiClientModelConfigDao.update(aiClientModelConfig);
+            if (count > 0) {
+                aiAgentPreheatService.preheat(currentModel.getClientId());
+            }
+            return ResponseEntity.ok(count > 0);
+        } catch (Exception e) {
+            log.error("Switch current chat model failed", e);
             return ResponseEntity.status(500).build();
         }
     }
