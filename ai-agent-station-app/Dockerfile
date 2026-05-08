@@ -1,5 +1,5 @@
-# 基础镜像 amd openjdk:17-jdk-slim arm openjdk:17-ea-17-jdk
-FROM openjdk:17-ea-17-jdk-slim-buster
+# 基础镜像，优先复用本地已存在的 JDK 17 镜像，避免拉取旧 openjdk 标签失败
+FROM maven:3.9.9-eclipse-temurin-17
 
 # 作者
 MAINTAINER xiaofuge

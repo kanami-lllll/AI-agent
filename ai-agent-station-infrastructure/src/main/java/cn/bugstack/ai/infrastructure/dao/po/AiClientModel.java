@@ -72,4 +72,19 @@ public class AiClientModel extends Page {
      */
     private Date updateTime;
 
+    /**
+     * 当前模型所属的智能体ID，仅用于后台展示当前对话模型设置
+     */
+    private Long agentId;
+
+    /**
+     * 当前模型所属的智能体名称，仅用于后台展示当前对话模型设置
+     */
+    private String agentName;
+
+    /**
+     * 当前模型绑定的客户端ID，仅用于后台快速重载运行时配置
+     */
+    private Long clientId;
+
 }

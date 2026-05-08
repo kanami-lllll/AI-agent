@@ -1,12 +1,5 @@
 package cn.bugstack.ai.types.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
 public enum ResponseCode {
 
     SUCCESS("0000", "成功"),
@@ -16,5 +9,18 @@ public enum ResponseCode {
 
     private String code;
     private String info;
+
+    ResponseCode(String code, String info) {
+        this.code = code;
+        this.info = info;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getInfo() {
+        return info;
+    }
 
 }

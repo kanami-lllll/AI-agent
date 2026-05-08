@@ -1,4 +1,4 @@
-﻿package cn.bugstack.ai.domain.agent.service;
+package cn.bugstack.ai.domain.agent.service;
 
 import cn.bugstack.ai.domain.agent.model.valobj.AiAgentTaskScheduleVO;
 

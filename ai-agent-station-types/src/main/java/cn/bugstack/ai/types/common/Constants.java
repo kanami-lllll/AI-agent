@@ -1,17 +1,10 @@
 package cn.bugstack.ai.types.common;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 public class Constants {
 
 
     public final static String SPLIT = ",";
 
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Getter
     public enum ResponseCode {
 
         SUCCESS("0000", "成功"),
@@ -25,6 +18,19 @@ public class Constants {
 
         private String code;
         private String info;
+
+        ResponseCode(String code, String info) {
+            this.code = code;
+            this.info = info;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public String getInfo() {
+            return info;
+        }
 
     }
 

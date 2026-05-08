@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bugstack.ai.infrastructure.dao.IApiPatrolConfigDao">
+
+    <resultMap id="dataMap" type="cn.bugstack.ai.infrastructure.dao.po.ApiPatrolConfig">
+        <id column="id" property="id"/>
+        <result column="patrol_name" property="patrolName"/>
+        <result column="request_method" property="requestMethod"/>
+        <result column="request_url" property="requestUrl"/>
+        <result column="request_headers" property="requestHeaders"/>
+        <result column="request_body" property="requestBody"/>
+        <result column="timeout" property="timeout"/>
+        <result column="expected_status_code" property="expectedStatusCode"/>
+        <result column="expected_json_field" property="expectedJsonField"/>
+        <result column="max_response_time" property="maxResponseTime"/>
+        <result column="status" property="status"/>
+        <result column="task_status" property="taskStatus"/>
+        <result column="cron_expression" property="cronExpression"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="queryApiPatrolConfigList" parameterType="cn.bugstack.ai.infrastructure.dao.po.ApiPatrolConfig" resultMap="dataMap">
+        SELECT
+            id, patrol_name, request_method, request_url, request_headers, request_body, timeout,
+            expected_status_code, expected_json_field, max_response_time, status, task_status, cron_expression,
+            remark, create_time, update_time
+        FROM api_patrol_config
+        <where>
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="patrolName != null and patrolName != ''">
+                AND patrol_name LIKE CONCAT('%', #{patrolName}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        <if test="pageSize != null and pageSize > 0">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryApiPatrolConfigById" parameterType="java.lang.Long" resultMap="dataMap">
+        SELECT
+            id, patrol_name, request_method, request_url, request_headers, request_body, timeout,
+            expected_status_code, expected_json_field, max_response_time, status, task_status, cron_expression,
+            remark, create_time, update_time
+        FROM api_patrol_config
+        WHERE id = #{id}
+    </select>
+
+    <select id="queryAllEnabledTaskConfigs" resultMap="dataMap">
+        SELECT
+            id, patrol_name, request_method, request_url, request_headers, request_body, timeout,
+            expected_status_code, expected_json_field, max_response_time, status, task_status, cron_expression,
+            remark, create_time, update_time
+        FROM api_patrol_config
+        WHERE status = 1
+          AND task_status = 1
+          AND cron_expression IS NOT NULL
+          AND cron_expression != ''
+        ORDER BY id
+    </select>
+
+    <insert id="insert" parameterType="cn.bugstack.ai.infrastructure.dao.po.ApiPatrolConfig" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO api_patrol_config (
+            patrol_name, request_method, request_url, request_headers, request_body, timeout,
+            expected_status_code, expected_json_field, max_response_time, status, task_status, cron_expression,
+            remark, create_time, update_time
+        ) VALUES (
+            #{patrolName}, #{requestMethod}, #{requestUrl}, #{requestHeaders}, #{requestBody}, #{timeout},
+            #{expectedStatusCode}, #{expectedJsonField}, #{maxResponseTime}, #{status}, #{taskStatus}, #{cronExpression},
+            #{remark}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="update" parameterType="cn.bugstack.ai.infrastructure.dao.po.ApiPatrolConfig">
+        UPDATE api_patrol_config
+        SET patrol_name = #{patrolName},
+            request_method = #{requestMethod},
+            request_url = #{requestUrl},
+            request_headers = #{requestHeaders},
+            request_body = #{requestBody},
+            timeout = #{timeout},
+            expected_status_code = #{expectedStatusCode},
+            expected_json_field = #{expectedJsonField},
+            max_response_time = #{maxResponseTime},
+            status = #{status},
+            task_status = #{taskStatus},
+            cron_expression = #{cronExpression},
+            remark = #{remark},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM api_patrol_config WHERE id = #{id}
+    </delete>
+
+</mapper>

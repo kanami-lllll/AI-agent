@@ -1,0 +1,196 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>接口巡检配置</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="../index.html">AI Agent Station</a>
+</header>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse" style="min-height: 100vh;">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="ai-agent.html"><i class="fas fa-robot"></i> AI智能体管理</a></li>
+                    <li class="nav-item"><a class="nav-link" href="ai-agent-client.html"><i class="fas fa-link"></i> 智能体客户端关联</a></li>
+                    <li class="nav-item"><a class="nav-link" href="ai-agent-task.html"><i class="fas fa-tasks"></i> AI代理任务调度</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="ai-api-patrol.html"><i class="fas fa-network-wired"></i> 接口巡检配置</a></li>
+                    <li class="nav-item"><a class="nav-link" href="ai-api-patrol-result.html"><i class="fas fa-clipboard-check"></i> 巡检结果记录</a></li>
+                    <li class="nav-item"><a class="nav-link" href="ai-rag-order.html"><i class="fas fa-file-invoice-dollar"></i> RAG订单管理</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-3">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                <h1 class="h3 mb-0">接口巡检配置</h1>
+                <button type="button" class="btn btn-primary btn-sm" id="btn-add-patrol">
+                    <i class="fas fa-plus"></i> 新增巡检配置
+                </button>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="search-patrol-name" placeholder="按巡检名称搜索">
+                        <button class="btn btn-outline-secondary" type="button" id="btn-search-patrol">搜索</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-sm align-middle">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>巡检名称</th>
+                        <th>方法</th>
+                        <th>请求地址</th>
+                        <th>预期状态码</th>
+                        <th>最大响应时间</th>
+                        <th>巡检状态</th>
+                        <th>调度状态</th>
+                        <th>Cron</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="patrol-list"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="modal fade" id="patrolModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="patrolModalLabel">新增巡检配置</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="patrolForm">
+                    <input type="hidden" id="patrol-id">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">巡检名称</label>
+                            <input type="text" class="form-control" id="patrol-name">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">请求方法</label>
+                            <select class="form-select" id="patrol-method">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="DELETE">DELETE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">巡检状态</label>
+                            <select class="form-select" id="patrol-status">
+                                <option value="1">启用</option>
+                                <option value="0">禁用</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">请求 URL</label>
+                        <input type="text" class="form-control" id="patrol-url">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">超时时间(ms)</label>
+                            <input type="number" class="form-control" id="patrol-timeout">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">预期状态码</label>
+                            <input type="number" class="form-control" id="patrol-expected-status-code">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">最大响应时间(ms)</label>
+                            <input type="number" class="form-control" id="patrol-max-response-time">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">预期 JSON 字段</label>
+                        <input type="text" class="form-control" id="patrol-expected-json-field" placeholder="例如：data.id">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">调度状态</label>
+                            <select class="form-select" id="patrol-task-status">
+                                <option value="0">关闭</option>
+                                <option value="1">开启</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Cron 表达式</label>
+                            <input type="text" class="form-control" id="patrol-cron-expression" placeholder="例如：0 0/5 * * * ?">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">请求头(JSON)</label>
+                        <textarea class="form-control" id="patrol-headers" rows="4" placeholder='{"Authorization":"Bearer xxx","Content-Type":"application/json"}'></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">请求体</label>
+                        <textarea class="form-control" id="patrol-body" rows="5" placeholder='{"name":"demo"}'></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">备注</label>
+                        <textarea class="form-control" id="patrol-remark" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button class="btn btn-primary" id="btn-save-patrol">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="executeResultModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">巡检执行结果</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="execute-result-summary" class="mb-3"></div>
+                <div class="mb-3">
+                    <label class="form-label">响应体</label>
+                    <textarea class="form-control" id="execute-result-body" rows="8" readonly></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">AI 巡检报告</label>
+                    <textarea class="form-control" id="execute-result-report" rows="8" readonly></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../../js/config.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
+<script src="../js/api-patrol.js"></script>
+</body>
+</html>

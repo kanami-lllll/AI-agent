@@ -15,6 +15,9 @@
         <result column="status" property="status"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
+        <result column="agent_id" property="agentId"/>
+        <result column="agent_name" property="agentName"/>
+        <result column="client_id" property="clientId"/>
     </resultMap>
     
     <!-- 查询所有模型配置 -->
@@ -108,6 +111,33 @@
         <if test="pageSize != null and pageSize > 0">
             LIMIT #{offset}, #{limit}
         </if>
+    </select>
+
+    <select id="queryCurrentChatModelSetting" resultMap="dataMap">
+        SELECT
+            m.id,
+            m.model_name,
+            m.base_url,
+            m.api_key,
+            m.completions_path,
+            m.embeddings_path,
+            m.model_type,
+            m.model_version,
+            m.timeout,
+            m.status,
+            m.create_time,
+            m.update_time,
+            a.id AS agent_id,
+            a.agent_name,
+            ac.client_id
+        FROM ai_agent a
+        INNER JOIN ai_agent_client ac ON a.id = ac.agent_id
+        INNER JOIN ai_client_model_config cmc ON ac.client_id = cmc.client_id
+        INNER JOIN ai_client_model m ON cmc.model_id = m.id
+        WHERE a.channel = 'chat_stream'
+          AND a.status = 1
+        ORDER BY a.id ASC, ac.sequence ASC
+        LIMIT 1
     </select>
     
 </mapper>
