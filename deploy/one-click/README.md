@@ -1,76 +1,147 @@
-﻿# AI Agent Station 鏈€灏忛儴缃茶鏄?
-璇ョ洰褰曟彁渚涢」鐩殑鏈€灏忓彲杩愯閮ㄧ讲鏂规锛岀敤浜庡湪鏈湴蹇€熷惎鍔ㄥ悗绔湇鍔°€佸墠绔〉闈互鍙婂繀瑕佺殑鏁版嵁瀛樺偍缁勪欢銆?
-## 鍖呭惈鐨勬湇鍔?
-- `mysql`锛氬瓨鍌ㄦ櫤鑳戒綋銆佹ā鍨嬨€佹彁绀鸿瘝銆佷换鍔¤皟搴︺€佹帴鍙ｅ贰妫€閰嶇疆涓庣粨鏋滄暟鎹?- `vector_db`锛氬瓨鍌ㄧ煡璇嗗簱鍚戦噺鏁版嵁
-- `ai-agent-station-app`锛氬悗绔湇鍔?- `frontend`锛氶潤鎬佸墠绔〉闈?
-褰撳墠閮ㄧ讲鏂规宸茬粡鍖呭惈鎺ュ彛宸℃涓庡洖褰掓姤鍛婃墍闇€鐨勫墠绔〉闈㈠拰鏁版嵁搴撳垵濮嬪寲鑴氭湰锛屼笉闇€瑕侀澶栦慨鏀?`docker-compose.yml`銆?
-## 鍚姩姝ラ
+# Docker 一键部署说明
 
-### 1. 澶嶅埗鐜鍙橀噺妯℃澘
+本目录提供 AI Agent Console 的最小 Docker 部署方案，适合本地验证、功能演示和面试项目展示。
+
+默认会启动以下服务：
+
+- MySQL：保存智能体、模型、提示词、工具、任务和接口巡检配置。
+- PostgreSQL(pgvector)：保存知识库向量数据。
+- ai-agent-station-app：后端服务。
+- frontend：Nginx 静态前端页面。
+- phpMyAdmin / pgAdmin：可选数据库管理工具。
+
+## 1. 准备环境
+
+需要先安装：
+
+- Docker Desktop
+- Git
+- 可用的 OpenAI-compatible 模型服务
+
+如果需要使用 RAG 知识库，模型服务需要支持 embedding 接口。
+
+## 2. 创建配置文件
+
+进入部署目录：
+
+```powershell
+cd deploy\one-click
+```
+
+复制配置模板：
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-### 2. 缂栬緫 `.env`
+Linux / macOS：
 
-鑷冲皯闇€瑕侀厤缃互涓嬪唴瀹癸細
+```sh
+cp .env.example .env
+```
+
+## 3. 配置 `.env`
+
+至少需要修改：
 
 ```env
 SPRING_AI_OPENAI_BASE_URL=https://api.openai.com
 SPRING_AI_OPENAI_API_KEY=sk-your-api-key
 OPENAI_CHAT_MODEL=gpt-4.1-mini
-AI_AGENT_STATION_APP_IMAGE=your-registry/ai-agent-station-app:latest
+AI_AGENT_STATION_APP_IMAGE=ai-agent-station-app:local
 ```
 
-璇存槑锛?
-- `SPRING_AI_OPENAI_BASE_URL`锛氭ā鍨嬫湇鍔″湴鍧€
-- `SPRING_AI_OPENAI_API_KEY`锛氭ā鍨嬫湇鍔″瘑閽?- `OPENAI_CHAT_MODEL`锛氶粯璁よ亰澶╂ā鍨?- `AI_AGENT_STATION_APP_IMAGE`锛氬悗绔湇鍔￠暅鍍忓悕
+如果你使用的是第三方 OpenAI-compatible 平台，把 `baseUrl`、`apiKey` 和模型名改成对应平台的配置即可。
 
-### 3. 鍚姩鐜
+## 4. 构建本地后端镜像
 
-Windows锛?
+如果已经有可用镜像，可以直接把 `.env` 中的 `AI_AGENT_STATION_APP_IMAGE` 改成对应镜像名。
+如果从源码部署，可以在项目根目录执行：
+
 ```powershell
-./start.ps1
+docker run --rm `
+  -v "${PWD}:/workspace" `
+  -v "$env:USERPROFILE\.m2:/root/.m2" `
+  -w /workspace `
+  maven:3.9.9-eclipse-temurin-17 `
+  mvn -DskipTests package
 ```
 
-Linux / macOS锛?
+然后构建镜像：
+
+```powershell
+docker build -t ai-agent-station-app:local -f ai-agent-station-app/Dockerfile ai-agent-station-app
+```
+
+## 5. 启动服务
+
+Windows：
+
+```powershell
+.\start.ps1
+```
+
+Linux / macOS：
+
 ```sh
 sh ./start.sh
 ```
 
-## 璁块棶鍦板潃
-
-- 鍓嶇椤甸潰锛歚http://localhost:8080`
-- 鍚庣鎺ュ彛锛歚http://localhost:8091/ai-agent-station`
-
-濡傞渶鏁版嵁搴撶鐞嗗伐鍏凤紝鍙澶栧惎鍔細
-
-```powershell
-docker compose --profile tools up -d
-```
-
-- phpMyAdmin锛歚http://localhost:8899`
-- pgAdmin锛歚http://localhost:5050`
-
-## 榛樿鍒濆鍖栫瓥鐣?
-鏈€灏忛儴缃查粯璁や繚鐣欎互涓嬭兘鍔涳細
-
-- 娴佸紡瀵硅瘽
-- 鍚庡彴閰嶇疆绠＄悊
-- 鎺ュ彛宸℃閰嶇疆
-- 宸℃缁撴灉璁板綍
-- 鐭ヨ瘑搴撲笂浼?- RAG 妫€绱㈤棶绛?
-涓洪伩鍏嶅惎鍔ㄩ樁娈典緷璧栭澶栫殑澶栭儴宸ュ叿鏈嶅姟锛屽垵濮嬪寲鑴氭湰浼氬叧闂笌澶栭儴鍐呭鍙戝竷鐩稿叧鐨勭ず渚嬩换鍔″拰宸ュ叿缁戝畾銆?
-## 閲嶆柊鍒濆鍖?
-濡傛灉淇敼浜嗘ā鍨嬪湴鍧€銆丄PI Key銆佹ā鍨嬪悕绉版垨鍒濆鍖栨暟鎹紝寤鸿閲嶆柊鍒濆鍖栫幆澧冿細
+如果需要重新初始化数据库和向量库：
 
 ```powershell
 docker compose down -v
 docker compose up -d
 ```
 
-濡傛灉姝ゅ墠宸茬粡鍚姩杩囨棫鐗堟湰鐜锛屼篃寤鸿鎵ц涓婅堪鍛戒护銆傛帴鍙ｅ贰妫€鍔熻兘鏂板浜嗘暟鎹簱琛ㄧ粨鏋勶紝鑰佺殑 MySQL 鏁版嵁鍗蜂笉浼氳嚜鍔ㄥ垱寤鸿繖浜涜〃銆?
-## 璇存槑
+## 6. 访问地址
 
-璇ラ儴缃叉柟妗堥潰鍚戞湰鍦板紑鍙戜笌鍔熻兘楠岃瘉鍦烘櫙銆傝嫢鐢ㄤ簬姝ｅ紡鐜锛屽缓璁ˉ鍏呴暅鍍忓彂甯冦€佸弽鍚戜唬鐞嗐€佹寔涔呭寲鐩綍銆佺洃鎺у拰瀹夊叏閰嶇疆銆?
+- 前端页面：http://localhost:8080
+- 后端接口：http://localhost:8091/ai-agent-station
+- 后台管理：http://localhost:8080/admin/index.html
+- 接口巡检配置：http://localhost:8080/admin/page/ai-api-patrol.html
+- 巡检结果记录：http://localhost:8080/admin/page/ai-api-patrol-result.html
+
+可选工具：
+
+```powershell
+docker compose --profile tools up -d
+```
+
+- phpMyAdmin：http://localhost:8899
+- pgAdmin：http://localhost:5050
+
+## 7. 数据目录
+
+当前 compose 使用宿主机目录保存数据库和日志数据：
+
+```text
+E:/docker-data/ai-agent-station/mysql
+E:/docker-data/ai-agent-station/pgvector
+E:/docker-data/ai-agent-station/log
+```
+
+如果你的机器没有 E 盘，可以在 `docker-compose.yml` 中把这几个 `source` 路径改成其他磁盘目录。
+
+## 8. 常见问题
+
+### 启动后没有新表
+
+说明旧 MySQL 数据卷还在。执行：
+
+```powershell
+docker compose down -v
+docker compose up -d
+```
+
+### 知识库上传失败
+
+优先检查模型服务是否支持 `/v1/embeddings`，以及 `.env` 中的 API Key 是否正确。
+
+### 页面没有更新
+
+前端静态资源可能被浏览器缓存，先按 `Ctrl + F5` 强制刷新。
+
+### 模型配置修改后无效
+
+进入后台“当前对话模型”页面确认配置是否保存成功。当前版本支持在线重载当前聊天模型，一般不需要重启容器。
